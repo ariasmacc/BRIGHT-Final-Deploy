@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import PublicLayout from './layouts/PublicLayout';
-import Overview from './pages/Public/Overview';
-import Ledger from './pages/Public/Ledger';
-import Documents from './pages/Public/Documents';
+
+import PublicLayout from './pages/Public/PublicLayout'; 
+import Overview from './pages/Public/PublicOverview';
+import Ledger from './pages/Public/PublicTL';
+import Documents from './pages/Public/PublicDocu';
 
 function App() {
   return (
