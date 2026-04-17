@@ -1,7 +1,6 @@
 import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
 
-const PublicLayout = () => {
+const PublicAccess = () => {
   return (
     <>
       {/* Header Section */}
@@ -49,9 +48,9 @@ const PublicLayout = () => {
 
       {/* Navigation Tabs */}
       <nav className="nav-tabs">
-        <Link strokeWidth="2" to="/public/overview">Overview</Link>
-        <Link to="/public/ledger">Transaction Ledger</Link>
-        <Link to="/public/documents">Documents</Link>
+        <a href="/public/overview">Overview</a>
+        <a href="/public/ledger">Transaction Ledger</a>
+        <a href="/public/documents">Documents</a>
       </nav>
 
       {/* About BRIGHT Modal */}
@@ -118,4 +117,4 @@ const PublicLayout = () => {
   );
 };
 
-export default PublicLayout;
+export default PublicAccess;
