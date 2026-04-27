@@ -7,7 +7,7 @@ const Dashboard = () => {
       <header className="header">
         <div className="logo" id="header-logo">
           <a href="#" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', color: 'inherit' }}>
-            <img src="../asset/gdg.png" alt="GDG Logo" />
+            <img src="/src/assets/bright-logo-v3.png" alt="BRIGHT Logo" />
           </a>
           <div className="staff-portal">Staff Portal</div>
         </div>
@@ -65,13 +65,13 @@ const Dashboard = () => {
 
       {/* NAVIGATION TABS */}
       <nav className="nav-tabs">
-        <a href="/admin/overview">Overview</a>
-        <a href="/admin/budget">Budget Allocation</a>
-        <a href="/admin/expenses">Record Expenses</a>
-        <a href="/admin/validation">Validation Center</a>
-        <a href="/admin/management" id="nav-user-management">User Management</a>
-        <a href="/admin/ledger">Transaction Ledger</a>
-        <a href="/admin/documents">Documents</a>
+        <a href="/admin/AdminOverview">Overview</a>
+        <a href="/admin/BudgetAllocation">Budget Allocation</a>
+        <a href="/admin/RecordExpense">Record Expenses</a>
+        <a href="/admin/ValidationCenter">Validation Center</a>
+        <a href="/admin/UserMngmt" id="nav-user-management">User Management</a>
+        <a href="/admin/TransactionLedger">Transaction Ledger</a>
+        <a href="/admin/DocumentMngmgt">Documents</a>
       </nav>
 
       {/* ACCOUNT SETTINGS MODAL */}

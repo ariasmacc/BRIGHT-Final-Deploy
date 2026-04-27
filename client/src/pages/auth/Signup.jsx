@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../../index.css';
+import { Link, useNavigate } from 'react-router-dom'; 
 
 const Signup = () => {
   const [fullname, setFullname] = useState('');
@@ -38,7 +39,7 @@ const Signup = () => {
         <div className="signup-info-panel">
           <div className="signup-logo">
             <a href="/" style={{ display: 'block', lineHeight: 0 }}>   
-              <img src="/asset/bright-logo-v3.png" alt="BRIGHT Logo" style={{ height: '80px', width: 'auto', display: 'block' }} /> 
+              <img src="/src/assets/bright-logo-v3.png" alt="BRIGHT Logo" style={{ height: '80px', width: 'auto', display: 'block' }} /> 
             </a> 
             <h1 style={{ marginTop: 0, marginBottom: 0, lineHeight: 1, fontSize: '1.5em', color: 'white' }}>BRIGHT</h1>
           </div>
@@ -95,7 +96,7 @@ const Signup = () => {
             </button>
 
             <p className="signup-footer" style={{ textAlign: 'center', marginTop: '15px' }}>
-              Already have an account? <a href="/login">Sign in here</a>
+              Already have an account? <Link to="/auth/login">Sign in here</Link>
             </p>
           </form>
         </div>

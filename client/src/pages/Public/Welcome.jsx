@@ -1,31 +1,10 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom'; 
-import './style.css'; 
-
-import brightLogo from '../assets/bright-darker-logo.png';
-import gdgLogo from '../assets/GDGLogo.png';
+import '../../index.css'; 
+import brightLogo from '../../assets/bright darker logo.png';
 
 const Welcome = () => {
     const navigate = useNavigate(); // Hook for navigation
-
-    const headlineText = "GDG on Campus - TUP Manila!";
-    const colors = ['#DB493C', '#E5A30F', '#4285F4', '#3AA056'];
-
-    const coloredHeadline = useMemo(() => {
-        return headlineText.split('').map((char, index) => {
-            if (char === ' ') return <span key={index}> </span>;
-            const randomColor = colors[Math.floor(Math.random() * colors.length)];
-            return (
-                <span 
-                    key={index} 
-                    className="random-color-letter" 
-                    style={{ color: randomColor, fontWeight: 'bold' }}
-                >
-                    {char}
-                </span>
-            );
-        });
-    }, []);
 
     const resetDashboard = (e) => {
         e.preventDefault();
@@ -39,13 +18,11 @@ const Welcome = () => {
                     <a href="#" onClick={resetDashboard}>
                         <img src={brightLogo} alt="BRIGHT Logo" />
                         <span>&times;</span>
-                        <img src={gdgLogo} alt="GDG Logo" />
                     </a>
                 </div>
 
                 <div className="welcome">
-                    <h1>Welcome to BRIGHT, </h1>
-                    <h1 id="gdg-headline">{coloredHeadline}</h1>
+                    <h1>Welcome to BRIGHT!</h1>
                     <h3>Budget Record Integrity using Generalized Hash-based Transparency</h3>
                     <p>Secure • Transparent • Immutable</p>
                 </div>
@@ -69,7 +46,7 @@ const Welcome = () => {
                         className="muted" 
                         id="welcome-login-button"
                         style={{ background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-                        onClick={() => navigate('/login')}
+                        onClick={() => navigate('/auth/login')}
                     >
                         Log in as staff
                     </button>

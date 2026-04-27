@@ -10,7 +10,7 @@ const PublicAccess = () => {
             href="/public/overview" 
             style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', color: 'inherit' }}
           >
-            <img src="../asset/gdg.png" alt="GDG Logo" />
+            <img src="../assets/bright-logo-v3" alt="BRIGHT" />
           </a>
           <div className="staff-portal">Public Access</div>
         </div>
@@ -48,9 +48,9 @@ const PublicAccess = () => {
 
       {/* Navigation Tabs */}
       <nav className="nav-tabs">
-        <a href="/public/overview">Overview</a>
-        <a href="/public/ledger">Transaction Ledger</a>
-        <a href="/public/documents">Documents</a>
+        <a href="/Public/PublicOverview">Overview</a>
+        <a href="/Public/TL">Transaction Ledger</a>
+        <a href="/Public/Docu">Documents</a>
       </nav>
 
       {/* About BRIGHT Modal */}
