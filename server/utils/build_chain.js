@@ -1,8 +1,18 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs'); // Added to check if file exists
 
-const dbPath = path.resolve(__dirname, 'budget_system.db');
+const dbPath = path.resolve(__dirname, '..','data', 'BRIGHTDatabase.db'); //changed
+
+// --- ADD THIS LOG TO DEBUG ---
+console.log("🔍 Checking database at:", dbPath);
+if (!fs.existsSync(dbPath)) {
+    console.error("❌ ERROR: The file does not exist at this path! Script will create an empty one and fail.");
+    process.exit(1); 
+}
+// -----------------------------
+
 const db = new sqlite3.Database(dbPath);
 
 const categoryIdToName = {

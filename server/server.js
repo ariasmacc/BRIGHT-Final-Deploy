@@ -17,19 +17,20 @@ function syncUploadsToVolume() {
     console.log("🔄 Starting File Rescue Operation...");
     
     // 1. Setup Paths
-    // NOTE: Siguraduhin na TAMA ang pangalan ng DB file mo dito (e.g. budget_system.db o bright_database.db)
-    const dbFileName = 'budget_system.db'; 
+    // NOTE: Siguraduhin na TAMA ang pangalan ng DB file mo dito (e.g. BRIGHTDatabase.db)
+    const dbFileName = 'BRIGHTDatabase.db';  //updated
     
     // Source (Galing sa deployment folder)
-    const sourceUploads = path.join(__dirname, 'templates/uploads');
-    const sourceDb = path.join(__dirname, dbFileName);
+    const sourceDb = path.join(__dirname, 'data', dbFileName);  //updated
+    const sourceUploads = path.join(__dirname, 'data');  //updated 
+  
 
     let destRoot;
     // Gamitin ang bagong variable check
     if (process.env.RAILWAY_ENVIRONMENT_NAME) {
         destRoot = '/app/data'; // Railway Volume
     } else {
-        console.log("ℹ️ Local environment. Skipping rescue.");
+        console.log("ℹ️ Local environment. Skipping rescue.", sourceDb); //updated
         return; 
     }
 
@@ -336,22 +337,28 @@ app.get('/admin-footer.html', auth, checkRole('Admin', 'Validator'), (req, res) 
 
 // --- TEMPORARY DOWNLOAD ROUTE ---
 app.get('/admin/download-db', auth, checkRole('Admin'), (req, res) => {
-    const volumePath = '/app/data/budget_system.db';
-    const localPath = path.join(__dirname, 'budget_system.db');
+    const volumePath = '/app/data/BRIGHTDatabase.db'; //changed
+    const localPath = path.join(__dirname, 'data','BRIGHTDatabase.db');//changed
 
     const dbFile = fs.existsSync(volumePath) ? volumePath : localPath;
 
     if (fs.existsSync(dbFile)) {
-        res.download(dbFile, 'budget_system_backup.db', (err) => {
+        res.download(dbFile, 'BRIGHTDatabase_Backup.db', (err) => { //changed
             if (err) {
                 console.error("Error downloading DB:", err);
                 res.status(500).send("Error downloading database.");
             }
         });
     } else {
+        //res.status(404).send("Database file not found.");
+        // Added console log to help you debug exactly where it looked
+        console.error(`❌ Download Error: File not found at ${dbFile}`);
         res.status(404).send("Database file not found.");
     }
 });
+
+// --- EXECUTE RESCUE OPERATION ---
+syncUploadsToVolume(); //added
 
 // --- Start Server ---
 app.listen(PORT, () => {

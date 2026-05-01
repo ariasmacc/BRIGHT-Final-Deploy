@@ -34,9 +34,9 @@ function runMigrations(db) {
 // -----------------------------
 
 // 1. Define the paths
-const CODE_DB_PATH = path.resolve(__dirname, '..', 'budget_system.db'); 
+const CODE_DB_PATH = path.resolve(__dirname, '..', 'data', 'BRIGHTDatabase.db'); //changed
 const VOLUME_FOLDER = '/app/data'; 
-const VOLUME_DB_PATH = path.join(VOLUME_FOLDER, 'budget_system.db'); 
+const VOLUME_DB_PATH = path.join(VOLUME_FOLDER, 'BRIGHTDatabase.db'); //changed
 
 let dbPath;
 
