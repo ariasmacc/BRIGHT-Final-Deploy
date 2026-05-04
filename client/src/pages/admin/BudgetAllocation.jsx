@@ -16,6 +16,10 @@ const BudgetAllocation = () => {
     try {
       const res = await fetch(`${API_BASE_URL}/budget/allocations`);
       const data = await res.json();
+
+  // Log the data to see what the server is actually sending back    
+      console.log("Fetched Allocations:", data);
+      
       setAllocations(data || []);
     } catch (err) {
       console.error('Error loading allocations:', err);
@@ -48,6 +52,11 @@ const BudgetAllocation = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+
+    // --- STEP 1: DEFINE THE VARIABLE ---
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    const activeUserId = storedUser?.user_id || 1; // Default to 1 if not found, but ideally should handle this case better
+
     const data = {
       name: formData.get('budgetname'),
       category: formData.get('category'),
@@ -55,7 +64,12 @@ const BudgetAllocation = () => {
       priority: formData.get('priority'),
       description: formData.get('description'),
       businessJustification: formData.get('businessjustification'),
+      // Added user ID from localStorage (assuming user info is stored there after login)
+      submitted_by_user_id: activeUserId
     };
+
+     // --- PUT THE LOG HERE ---
+    console.log("Submitting with User ID:", activeUserId); 
 
     try {
       const res = await fetch(`${API_BASE_URL}/budget/allocations`, {
@@ -254,7 +268,7 @@ const BudgetAllocation = () => {
                     {selectedBudget.documents?.length > 0 ? (
                       selectedBudget.documents.map((doc, index) => (
                         <li key={index}>
-                          📎 <a href={doc.file_path?.replace('templates', '') || '#'} target="_blank" rel="noreferrer">
+                          📎 <a href={doc.file_path?.replace('uploads', '') || '#'} target="_blank" rel="noreferrer">
                             {doc.file_name}
                           </a> ({doc.file_type})
                         </li>

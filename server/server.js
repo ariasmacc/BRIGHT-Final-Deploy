@@ -90,12 +90,12 @@ const categoryRoutes = require('./routes/categoryRoutes');
 
 // --- Initialization ---
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;//binago ko sana tama na siya whhhwdn
 
 // --- UPLOAD CONFIGURATION (FIXED) ---
 const UPLOAD_DIR = process.env.RAILWAY_ENVIRONMENT 
     ? '/app/data/uploads' 
-    : path.join(__dirname, 'templates/uploads');
+    : path.join(__dirname, 'uploads'); //changed
 
 if (!fs.existsSync(UPLOAD_DIR)) {
     fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -111,7 +111,7 @@ app.get('/favicon.ico', (req, res) => res.status(204).end());
 app.use(cors()); 
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
-app.use(express.static(path.join(__dirname, 'templates')));
+app.use(express.static(path.join(__dirname, 'uploads')));
 app.use(cookieParser());
 
 // --- HTTP EMAIL TRANSPORTER ---
@@ -184,7 +184,7 @@ app.use('/api/users', users);
 app.get('/admin/view-audit-ledger', auth, checkRole('Admin', 'Validator'), (req, res) => {
     let logPath = process.env.RAILWAY_ENVIRONMENT 
         ? '/app/data/blockchain_audit_ledger.txt' 
-        : path.join(__dirname, 'templates/blockchain_audit_ledger.txt');
+        : path.join(__dirname, 'blockchain_audit_ledger.txt');
 
     if (fs.existsSync(logPath)) {
         fs.readFile(logPath, 'utf8', (err, data) => {
@@ -208,7 +208,7 @@ app.get('/admin/view-audit-ledger', auth, checkRole('Admin', 'Validator'), (req,
 app.get('/admin/download-ledger', auth, checkRole('Admin'), (req, res) => {
     let logPath = process.env.RAILWAY_ENVIRONMENT 
         ? '/app/data/blockchain_audit_ledger.txt' 
-        : path.join(__dirname, 'templates/blockchain_audit_ledger.txt');
+        : path.join(__dirname, 'blockchain_audit_ledger.txt');
 
     if (fs.existsSync(logPath)) {
         res.download(logPath, 'OFFICIAL_AUDIT_LEDGER.txt');

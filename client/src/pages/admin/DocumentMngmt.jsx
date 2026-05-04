@@ -52,7 +52,7 @@ const DocumentMngmt = () => {
 
   // Action Handlers
   const handleAction = (action, doc) => {
-    const urlPath = doc.file_path.replace('templates', '');
+    const urlPath = doc.file_path.replace('uploads', '');
     if (action === 'view') {
       window.open(urlPath, '_blank');
     } else if (action === 'download') {

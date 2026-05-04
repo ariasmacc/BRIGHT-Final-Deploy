@@ -11,7 +11,7 @@ const OTPVerification = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const API_BASE_URL = '/api';
+    const API_BASE_URL = '/api'; 
 
     // Extract userId from URL on mount
     const query = new URLSearchParams(location.search);

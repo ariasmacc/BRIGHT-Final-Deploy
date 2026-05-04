@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
         uploadPath = '/app/data/uploads'; // Dito dapat sa Volume para di mabura
     } else {
         // Local Development
-        uploadPath = path.join(__dirname, '../templates/uploads');
+        uploadPath = path.join(__dirname, '../uploads');
     }
     // ----------------------------------------------
     

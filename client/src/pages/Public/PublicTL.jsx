@@ -11,7 +11,7 @@ const PublicTL = () => {
   const [isTypeOpen, setIsTypeOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
-  const API_BASE_URL = '/api/public';
+  const API_BASE_URL = '/api/public'; 
 
   // 1. Fetch Data on Mount
   useEffect(() => {

@@ -17,7 +17,7 @@ function recordToLedger(type, id, hash, rawString) {
         if (process.env.RAILWAY_ENVIRONMENT) {
             logPath = '/app/data/blockchain_audit_ledger.txt'; 
         } else {
-            logPath = path.join(__dirname, '../templates/blockchain_audit_ledger.txt'); 
+            logPath = path.join(__dirname, 'blockchain_audit_ledger.txt'); 
         }
 
         const logEntry = `

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 const RecordExpense = () => {
-  const API_BASE_URL = '/api';
+  const API_BASE_URL = '/api'; 
 
   // --- State Management ---
   const [expenses, setExpenses] = useState([]);
@@ -325,7 +325,7 @@ const RecordExpense = () => {
                   {modalData?.documents?.length > 0 ? (
                     modalData.documents.map((doc, i) => (
                       <li key={i}>
-                        📎 <a href={doc.file_path?.replace('templates', '') || '#'} target="_blank" rel="noreferrer">{doc.file_name}</a> 
+                        📎 <a href={doc.file_path?.replace('uploads', '') || '#'} target="_blank" rel="noreferrer">{doc.file_name}</a> 
                         ({doc.file_type}, {(doc.file_size_kb || 0).toFixed(1)}KB)
                       </li>
                     ))

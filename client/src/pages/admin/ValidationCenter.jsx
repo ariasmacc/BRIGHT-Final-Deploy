@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../../index.css';
 
 const ValidationCenter = () => {
-  const API_BASE_URL = '/api';
+  const API_BASE_URL = '/api'; 
 
   // ==========================================
   // 1. REACT STATE (Pampalit sa document.getElementById)

@@ -11,7 +11,7 @@ const TransactionLedger = () => {
   const [isTypeOpen, setIsTypeOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
-  const API_BASE_URL = '/api';
+  const API_BASE_URL = '/api'; 
 
   useEffect(() => {
     const fetchTransactions = async () => {

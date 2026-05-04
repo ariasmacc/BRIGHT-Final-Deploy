@@ -5,7 +5,7 @@ const UserMngmnt = () => {
     const [users, setUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const API_BASE_URL = '/api/users';
+    const API_BASE_URL = '/api/users'; 
 
     // 1. Load FontAwesome and Initial Data
     useEffect(() => {

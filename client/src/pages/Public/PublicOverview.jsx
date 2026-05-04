@@ -21,7 +21,7 @@ ChartJS.register(
 );
 
 const PublicOverview = () => {
-  const API_BASE_URL = '/api/public';
+  const API_BASE_URL = '/api/public'; 
 
   // State for data
   const [summary, setSummary] = useState({

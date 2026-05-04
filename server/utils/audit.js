@@ -4,7 +4,10 @@ const crypto = require('crypto');
 
 // 1. Setup Database Connection
 // Siguraduhin na ang 'BRIGHTDatabase.db' ay ang file na dinownload mo galing Railway (na inedit mo)
-const dbPath = path.resolve(__dirname, 'server','data', 'BRIGHTDatabase.db'); //changed
+//const dbPath = path.resolve(__dirname, '..','data', 'BRIGHTDatabase.db'); //changed
+//const dbPath = path.join(__dirname, '..', 'data', 'BRIGHTDatabase.db');
+// This uses the folder where you run the command as the starting point
+const dbPath = path.join(process.cwd(), 'data', 'BRIGHTDatabase.db');
 const db = new sqlite3.Database(dbPath);
 
 console.log("🕵️  STARTING REAL BLOCKCHAIN AUDIT (Tampering Detection)...\n");

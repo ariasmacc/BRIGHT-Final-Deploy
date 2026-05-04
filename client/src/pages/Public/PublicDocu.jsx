@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../../index.css';
 
 const PublicDocu = () => {
-  const API_BASE_URL = '/api/public';
-
+  const API_BASE_URL = '/api/public'; 
   // ==========================================
   // 1. STATE MANAGEMENT
   // ==========================================

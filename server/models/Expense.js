@@ -134,8 +134,8 @@ const Expense = {
                     // Production (Railway Volume)
                     systemFilePath = path.join('/app/data/uploads', file.filename);
                 } else {
-                    // Local Development (Templates folder)
-                    systemFilePath = path.join(__dirname, '../templates/uploads', file.filename);
+                    // Local Development 
+                    systemFilePath = path.join(__dirname, '../uploads', file.filename);
                 }
 
                 // Calculate Actual File Hash using System Path
