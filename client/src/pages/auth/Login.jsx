@@ -10,6 +10,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
@@ -18,16 +19,26 @@ const Login = () => {
 const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMsg(''); 
     
+    // Simulate login logic with DUMMY AUTHENTICATION
     setTimeout(() => {
         setIsLoading(false);
         
         if (role === 'Admin') {
-            navigate('/admin/overview'); 
+            if (username === 'SEadmin' && password === 'password123') {
+                navigate('/admin/overview'); 
+            } else {
+                setErrorMsg('Invalid Admin username or password!');
+            }
         } else if (role === 'Validator') {
-            navigate('/admin/validation'); 
+            if (username === 'validator' && password === 'password123') {
+                navigate('/admin/validation'); 
+            } else {
+                setErrorMsg('Invalid Validator username or password!');
+            }
         }
-    }, 1500);
+    }, 1000); 
   };
 
   return (
@@ -59,6 +70,12 @@ const handleLoginSubmit = async (e) => {
           
           <h3>Login</h3>
           <p className="card-desc">Choose your role and enter your credentials</p>
+
+          {errorMsg && (
+            <div style={{ color: '#dc2626', backgroundColor: '#fee2e2', padding: '10px', borderRadius: '6px', marginBottom: '15px', fontSize: '14px', textAlign: 'center', border: '1px solid #f87171' }}>
+              {errorMsg}
+            </div>
+          )}
 
           <form onSubmit={handleLoginSubmit}>
             <label>Role</label>

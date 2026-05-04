@@ -32,23 +32,42 @@ const ValidationCenter = () => {
   // ==========================================
   // 3. FUNCTIONS / API CALLS
   // ==========================================
-  const loadQueue = async () => {
+const loadQueue = async () => {
     try {
-        const res = await fetch(`${API_BASE_URL}/validation/queue`);
-        const data = await res.json();
-        setQueue(data);
-      } catch (err) {
-        console.error('Error loading validation queue:', err);
+      // Assuming your backend server is on port 3000
+      const res = await fetch(`http://localhost:3000${API_BASE_URL}/validation/queue`); 
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setQueue(data);
+    } catch (err) {
+      console.error('Error loading validation queue:', err);
+      // Optional: Set to empty array so the table shows "No data yet" instead of loading forever
+      // setQueue([]); 
     }
   };
 
   const loadSummary = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/validation/summary`);
+      const res = await fetch(`http://localhost:3000${API_BASE_URL}/validation/summary`);
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
       const data = await res.json();
       setSummary(data);
     } catch (err) {
       console.error('Error loading validation summary:', err);
+      setSummary({
+        pendingCount: '0',
+        highPriorityCount: '0',
+        validatedThisMonth: '0',
+        readyForApproval: '0'
+      });
     }
   };
 

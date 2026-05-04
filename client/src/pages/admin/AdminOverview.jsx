@@ -4,6 +4,27 @@ import Footer from '../../components/layout/Footer';
 import '../../index.css';
 import AdminLayout from '../../components/layout/AdminLayout';
 
+// 1. CHART.JS IMPORTS (Galing sa PublicOverview)
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 const AdminOverview = () => {
   const API_BASE_URL = '/api';
 
@@ -20,9 +41,10 @@ const AdminOverview = () => {
 
   const [transactions, setTransactions] = useState([]);
   const [utilization, setUtilization] = useState([]);
+  const [trend, setTrend] = useState([]); // DINAGDAG: Para sa Monthly Trend Chart
 
   // ==========================================
-  // 2. EFFECT HOOK (Pamalit sa DOMContentLoaded)
+  // 2. EFFECT HOOK 
   // ==========================================
   useEffect(() => {
     loadSummaryData();
@@ -35,7 +57,8 @@ const AdminOverview = () => {
   // ==========================================
   const loadSummaryData = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/overview/summary`);
+      // NOTE: Gamitin ang localhost:3000 kapag nagfe-fetch para kumonekta sa backend
+      const res = await fetch(`http://localhost:3000${API_BASE_URL}/overview/summary`);
       const data = await res.json();
       const totalBudget = data.totalBudget || 0;
       const totalSpent = data.totalSpent || 0;
@@ -47,9 +70,7 @@ const AdminOverview = () => {
         percentage: totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(0) : 0,
         pendingCount: data.pendingCount || 0
       });
-      
-      setSummary({
-      });
+      // TINANGGAL YUNG EMPTY setSummary({}) DITO PARA HINDI MABURA ANG DATA
     } catch (err) {
       console.error('Error loading summary data:', err);
     }
@@ -57,7 +78,7 @@ const AdminOverview = () => {
 
   const loadRecentTransactions = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/transactions`);
+      const res = await fetch(`http://localhost:3000${API_BASE_URL}/transactions`);
       const data = await res.json();
       setTransactions(data);
     } catch (err) {
@@ -67,19 +88,54 @@ const AdminOverview = () => {
 
   const loadDashboardData = async () => {
     try {
-      const utilizationRes = await fetch(`${API_BASE_URL}/overview/utilization`);
-      const data = await utilizationRes.json();
-      setUtilization(data);
-      
-      setUtilization([
+      // DINAGDAG: Sabay kukunin ang utilization at trend
+      const [utilRes, trendRes] = await Promise.all([
+        fetch(`http://localhost:3000${API_BASE_URL}/overview/utilization`),
+        fetch(`http://localhost:3000${API_BASE_URL}/overview/spending-trend`)
       ]);
+
+      if (utilRes.ok) setUtilization(await utilRes.json());
+      if (trendRes.ok) setTrend(await trendRes.json());
+      // TINANGGAL YUNG EMPTY setUtilization([]) DITO
     } catch (err) {
       console.error('Error loading dashboard data:', err);
     }
   };
 
   // ==========================================
-  // 4. JSX / UI RENDER
+  // 4. CHART CONFIGURATIONS
+  // ==========================================
+  const categoryChartData = {
+    labels: utilization.map(c => c.category),
+    datasets: [{
+      label: 'Budget Allocated',
+      data: utilization.map(c => c.totalAllocated),
+      backgroundColor: 'rgba(44, 62, 80, 0.9)',
+      borderColor: 'rgba(44, 62, 80, 1)',
+      borderWidth: 1
+    }]
+  };
+
+  const trendChartData = {
+    labels: trend.map(d => new Date(d.month + '-02').toLocaleString('default', { month: 'short' })),
+    datasets: [{
+      label: 'Total Spent',
+      data: trend.map(d => d.totalSpent),
+      backgroundColor: 'rgba(44, 62, 80, 0.9)',
+      borderColor: 'rgba(44, 62, 80, 1)',
+      borderWidth: 1
+    }]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true } }
+  };
+
+  // ==========================================
+  // 5. JSX / UI RENDER
   // ==========================================
   return (
     <main className="admin-overview">
@@ -118,18 +174,18 @@ const AdminOverview = () => {
         <div className="chart-card">
           <h3>Budget Allocation by Category</h3>
           <p className="subtitle">Current spending vs allocated amounts</p>
-          {/* PLACEHOLDER FOR CHART.JS */}
-          <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f4f4f4', border: '1px dashed #ccc' }}>
-            <p>Chart.js Component Here</p>
+          {/* IPINALIT ANG CHART DITO */}
+          <div style={{ height: '300px' }}>
+             <Bar data={categoryChartData} options={chartOptions} />
           </div>
         </div>
 
         <div className="chart-card">
           <h3>Monthly Spending Trend</h3>
           <p className="subtitle">Spending patterns over the last 6 months</p>
-          {/* PLACEHOLDER FOR CHART.JS */}
-          <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f4f4f4', border: '1px dashed #ccc' }}>
-             <p>Chart.js Component Here</p>
+           {/* IPINALIT ANG CHART DITO */}
+          <div style={{ height: '300px' }}>
+             <Bar data={trendChartData} options={chartOptions} />
           </div>
         </div>
       </section>
@@ -139,7 +195,6 @@ const AdminOverview = () => {
           <h3>Budget Utilization by Category</h3>
           <p className="subtitle">Progress towards budget limits</p>
           <div id="budgetContainer">
-            {/* DYNAMIC PROGRESS BARS MAP */}
             {utilization.length === 0 ? (
               <p>Loading utilization data...</p>
             ) : (
@@ -165,7 +220,6 @@ const AdminOverview = () => {
           <h3>Recent Transactions</h3>
           <p className="subtitle">Latest budget activities</p>
           <div id="transactionsContainer">
-            {/* DYNAMIC TRANSACTIONS MAP */}
             {transactions.length === 0 ? (
               <p>No recent transactions.</p>
             ) : (

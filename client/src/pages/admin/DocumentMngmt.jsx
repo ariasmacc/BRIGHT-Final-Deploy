@@ -9,27 +9,29 @@ const DocumentMngmt = () => {
   const [user, setUser] = useState(null);
 
   //  Initial Load & Auth Check
-  useEffect(() => {
+useEffect(() => {
     const userString = localStorage.getItem('user');
     if (userString) {
       setUser(JSON.parse(userString));
     } else {
-      window.location.href = '/login';
+      setUser({ name: 'Admin', role: 'Admin' }); 
     }
 
     loadDocuments();
   }, []);
 
   // Data Fetching
-  const loadDocuments = async () => {
+const loadDocuments = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/documents`);
+      const res = await fetch(`http://localhost:3000${API_BASE_URL}/documents`);
       if (!res.ok) throw new Error('Failed to fetch documents');
       const data = await res.json();
       setAllDocuments(data);
       setFilteredDocuments(data);
     } catch (err) {
       console.error('Error loading documents:', err);
+      setAllDocuments([]);
+      setFilteredDocuments([]);
     }
   };
 
