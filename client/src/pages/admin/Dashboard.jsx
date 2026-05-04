@@ -1,6 +1,38 @@
 import React from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  
+  // State for UI Toggles
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState(null); 
+  const [user, setUser] = useState({ name: 'User', role: 'Staff' });
+
+  // Password Visibility States
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
+
+  // Sync with LocalStorage for User Info
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error("Failed to parse user data");
+      }
+    }
+  }, []);
+
+  const handleLogout = (e) => {
+    e.preventDefault();
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
+
+  const closeModal = () => setActiveModal(null);
   return (
     <>
       {/* HEADER SECTION */}
@@ -65,13 +97,13 @@ const Dashboard = () => {
 
       {/* NAVIGATION TABS */}
       <nav className="nav-tabs">
-        <a href="/admin/AdminOverview">Overview</a>
-        <a href="/admin/BudgetAllocation">Budget Allocation</a>
-        <a href="/admin/RecordExpense">Record Expenses</a>
-        <a href="/admin/ValidationCenter">Validation Center</a>
-        <a href="/admin/UserMngmt" id="nav-user-management">User Management</a>
-        <a href="/admin/TransactionLedger">Transaction Ledger</a>
-        <a href="/admin/DocumentMngmgt">Documents</a>
+        <NavLink to="/admin/overview" className={({ isActive }) => isActive ? 'active' : ''}>Overview</NavLink>
+                <NavLink to="/admin/budget-allocation" className={({ isActive }) => isActive ? 'active' : ''}>Budget Allocation</NavLink>
+                <NavLink to="/admin/record-expense" className={({ isActive }) => isActive ? 'active' : ''}>Record Expenses</NavLink>
+                <NavLink to="/admin/validation" className={({ isActive }) => isActive ? 'active' : ''}>Validation Center</NavLink>
+                <NavLink to="/admin/user-management" className={({ isActive }) => isActive ? 'active' : ''}>User Management</NavLink>
+                <NavLink to="/admin/transaction-ledger" className={({ isActive }) => isActive ? 'active' : ''}>Transaction Ledger</NavLink>
+                <NavLink to="/admin/documents" className={({ isActive }) => isActive ? 'active' : ''}>Documents</NavLink>
       </nav>
 
       {/* ACCOUNT SETTINGS MODAL */}

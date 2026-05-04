@@ -1,15 +1,25 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-// Layouts and Pages
-import AdminOverview from './pages/admin/AdminOverview';
-import ValidationCenter from './pages/admin/ValidationCenter';
+// Layouts
 import PublicLayout from './pages/Public/PublicLayout'; 
-import Overview from './pages/Public/PublicOverview';
-import Welcome from './pages/Public/Welcome';
-import Ledger from './pages/Public/PublicTL';
-import Documents from './pages/Public/PublicDocu';
+import AdminLayout from './components/layout/AdminLayout';
+
+// Auth & Public Pages
 import Login from './pages/auth/login'; 
 import Signup from './pages/auth/signup';
+import Welcome from './pages/Public/Welcome';
+import Overview from './pages/Public/PublicOverview';
+import Ledger from './pages/Public/PublicTL';
+import Documents from './pages/Public/PublicDocu';
+
+// Admin Pages (Ensure each one is here ONLY ONCE)
+import AdminOverview from './pages/admin/AdminOverview';
+import ValidationCenter from './pages/admin/ValidationCenter';
+import BudgetAllocation from './pages/admin/BudgetAllocation';
+import RecordExpense from './pages/admin/RecordExpense';
+import UserMngmnt from './pages/admin/UserMngmnt';
+import TransactionLedger from './pages/admin/TransactionLedger';
+import DocumentMngmt from './pages/admin/DocumentMngmt';
 
 function App() {
   return (
@@ -21,9 +31,16 @@ function App() {
         <Route path="/auth/signup" element={<Signup />} />
         
         {/* 2. DITO MO IDADAGDAG YUNG ADMIN ROUTE MO: */}
-        <Route path="/admin/overview" element={<AdminOverview />} />
-        <Route path="/admin/validation" element={<ValidationCenter />} />
-        
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="overview" element={<AdminOverview />} />
+          <Route path="validation" element={<ValidationCenter />} />
+          <Route path="budget-allocation" element={<BudgetAllocation />} />
+          <Route path="record-expense" element={<RecordExpense />} />
+          <Route path="user-management" element={<UserMngmnt />} />
+          <Route path="transaction-ledger" element={<TransactionLedger />} />
+          <Route path="documents" element={<DocumentMngmt />} />  
+        </Route>
+
         {/* Redirect root (/) to the Welcome splash screen */}
         <Route path="/" element={<Navigate to="/welcome" replace />} />
 

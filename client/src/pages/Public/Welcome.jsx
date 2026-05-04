@@ -17,7 +17,6 @@ const Welcome = () => {
                 <div className="welcome-logo">
                     <a href="#" onClick={resetDashboard}>
                         <img src={brightLogo} alt="BRIGHT Logo" />
-                        <span>&times;</span>
                     </a>
                 </div>
 

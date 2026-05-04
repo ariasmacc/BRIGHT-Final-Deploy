@@ -1,24 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
-import Footer from '../../components/layout/Footer';  // Ensure this path matches your file structure
+import Footer from '../../components/layout/Footer'; 
+import brightLogo from '../../assets/bright-logo-v3.png';
 
 const PublicLayout = () => {
-  // State to manage which modal is open
-  const [activeModal, setActiveModal] = useState(null);
-
-  const openModal = (modalId) => setActiveModal(modalId);
-  const closeModal = () => setActiveModal(null);
-
   return (
     <div className="layout-wrapper" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Header Section */}
+      {/* --- HEADER --- */}
       <header className="header">
         <div className="logo" id="header-logo">
           <Link 
             to="/public/overview" 
             style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', color: 'inherit' }}
           >
-            <img src="/src/assets/bright-logo-v3.png" alt="BRIGHT" />
+            <img src={brightLogo} alt="BRIGHT" />
             <h1 style={{ margin: 0, fontSize: '1.5em', color: 'white' }}>BRIGHT</h1>
           </Link>
           <div className="staff-portal">Public Access</div>
@@ -39,73 +34,26 @@ const PublicLayout = () => {
         </div>
       </header>
 
-      {/* Page Title */}
+      {/* --- PAGE TITLE --- */}
       <div className="page-header">
         <h2>Public Dashboard</h2>
         <p>Transparent view of budget allocations and expenses</p>
       </div>
 
-      {/* Navigation Tabs */}
+      {/* --- NAV TABS --- */}
       <nav className="nav-tabs">
         <NavLink to="/public/overview" className={({ isActive }) => isActive ? 'active' : ''}>Overview</NavLink>
         <NavLink to="/public/ledger" className={({ isActive }) => isActive ? 'active' : ''}>Transaction Ledger</NavLink>
         <NavLink to="/public/documents" className={({ isActive }) => isActive ? 'active' : ''}>Documents</NavLink>
       </nav>
 
-      {/* --- CONTENT AREA --- */}
+      {/* --- MAIN CONTENT (Where child pages render) --- */}
       <main className="content-container" style={{ flex: 1 }}>
         <Outlet />
       </main>
 
-      {/* --- INTEGRATED FOOTER COMPONENT --- */}
-      <Footer openModal={openModal} />
-
-      {/* --- MODALS SECTION --- */}
-      {/* About BRIGHT Modal */}
-      {activeModal === 'aboutBright' && (
-        <div className="modal" style={{ display: 'block' }}>
-          <div className="modal-content">
-            <span className="close" onClick={closeModal}>&times;</span>
-            <h2>About BRIGHT</h2>
-            <p>BRIGHT (Budget Record Integrity using Generalized Hash-based Transparency) is a web-based financial management system designed to promote transparency, accountability, and data integrity.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Terms & Conditions Modal */}
-      {activeModal === 'terms' && (
-        <div className="modal" style={{ display: 'block' }}>
-          <div className="modal-content">
-            <span className="close" onClick={closeModal}>&times;</span>
-            <h2>Terms & Conditions</h2>
-            <ul style={{ marginLeft: '1rem', lineHeight: '1.6' }}>
-              <li>By using BRIGHT, users agree to follow all system rules on financial recording, verification, and data handling.</li>
-            </ul>
-          </div>
-        </div>
-      )}
-
-      {/* Privacy Policy Modal */}
-      {activeModal === 'privacy' && (
-        <div className="modal" style={{ display: 'block' }}>
-          <div className="modal-content">
-            <span className="close" onClick={closeModal}>&times;</span>
-            <h2>Privacy Policy</h2>
-            <p>BRIGHT stores only essential information required for financial record integrity.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Team Modal */}
-      {activeModal === 'team' && (
-        <div className="modal" style={{ display: 'block' }}>
-          <div className="modal-content">
-            <span className="close" onClick={closeModal}>&times;</span>
-            <h2>Team</h2>
-            <p>BRIGHT Development Team – BSCS 3A (2026)</p>
-          </div>
-        </div>
-      )}
+      {/* --- FOOTER (Includes Integrated Modals) --- */}
+      <Footer /> 
     </div>
   );
 };

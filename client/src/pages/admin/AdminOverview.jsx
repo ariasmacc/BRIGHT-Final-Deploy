@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Outlet, NavLink, Link } from 'react-router-dom';
+import Footer from '../../components/layout/Footer'; 
 import '../../index.css';
+import AdminLayout from '../../components/layout/AdminLayout';
 
 const AdminOverview = () => {
   const API_BASE_URL = '/api';
@@ -79,7 +82,7 @@ const AdminOverview = () => {
   // 4. JSX / UI RENDER
   // ==========================================
   return (
-    <main className="dashboard">
+    <main className="admin-overview">
       <div className="public-budget">
         <h1>Public Budget Dashboard</h1>
         <p className="subtitle">Real-time view of budget allocations and spending</p>

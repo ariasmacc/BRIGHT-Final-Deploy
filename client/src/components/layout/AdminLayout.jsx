@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import brightLogo from '../../assets/bright-logo-v3.png';
+import Footer from '../../components/layout/Footer'; 
+
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -40,7 +43,8 @@ const AdminLayout = () => {
       <header className="header">
         <div className="logo" id="header-logo">
           <NavLink to="/admin/AdminOverview" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', color: 'inherit' }}>
-            <img src="../assets/bright-logo-v3" alt="BRIGHT" />
+            <img src={brightLogo} alt="BRIGHT" />
+            <h1 style={{ margin: 0, fontSize: '1.5em', color: 'white' }}>BRIGHT</h1>
           </NavLink>
           <div className="staff-portal">Staff Portal</div>
         </div>
@@ -89,13 +93,13 @@ const AdminLayout = () => {
 
       {/* --- NAV TABS --- */}
       <nav className="nav-tabs">
-        <NavLink to="/admin/AdminOverview">Overview</NavLink>
-        <NavLink to="/admin/BudgetAllocation">Budget Allocation</NavLink>
-        <NavLink to="/admin/RecordExpense">Record Expenses</NavLink>
-        <NavLink to="/admin/ValidationCenter">Validation Center</NavLink>
-        <NavLink to="/admin/UserMngmt">User Management</NavLink>
-        <NavLink to="/admin/TransactionLedger">Transaction Ledger</NavLink>
-        <NavLink to="/admin/Docu">Documents</NavLink>
+        <NavLink to="/admin/overview" className={({ isActive }) => isActive ? 'active' : ''}>Overview</NavLink>
+        <NavLink to="/admin/budget-allocation" className={({ isActive }) => isActive ? 'active' : ''}>Budget Allocation</NavLink>
+        <NavLink to="/admin/record-expense" className={({ isActive }) => isActive ? 'active' : ''}>Record Expenses</NavLink>
+        <NavLink to="/admin/validation" className={({ isActive }) => isActive ? 'active' : ''}>Validation Center</NavLink>
+        <NavLink to="/admin/user-management" className={({ isActive }) => isActive ? 'active' : ''}>User Management</NavLink>
+        <NavLink to="/admin/transaction-ledger" className={({ isActive }) => isActive ? 'active' : ''}>Transaction Ledger</NavLink>
+        <NavLink to="/admin/documents" className={({ isActive }) => isActive ? 'active' : ''}>Documents</NavLink>
       </nav>
 
       {/* --- PAGE CONTENT --- */}
@@ -103,90 +107,7 @@ const AdminLayout = () => {
         <Outlet />
       </main>
 
-      {/* --- FOOTER TRIGGERS --- */}
-      <footer style={{ textAlign: 'center', padding: '20px', fontSize: '0.8rem', color: '#7f8c8d' }}>
-          <span onClick={() => setActiveModal('aboutBrightModal')} style={{cursor: 'pointer'}}>About BRIGHT</span> | 
-          <span onClick={() => setActiveModal('termsModal')} style={{cursor: 'pointer', margin: '0 10px'}}>Terms</span> | 
-          <span onClick={() => setActiveModal('privacyModal')} style={{cursor: 'pointer', marginRight: '10px'}}>Privacy</span> |
-          <span onClick={() => setActiveModal('aboutModal')} style={{cursor: 'pointer'}}>Team</span>
-      </footer>
-
-      {/* --- MODALS --- */}
-
-      {/* Account Settings Modal */}
-      {activeModal === 'accountSettingsModal' && (
-        <div className="modal-overlay" style={{ display: 'flex' }}>
-          <div className="modal-container">
-            <div className="modal-header">
-              <div>
-                <h3>Account Settings</h3>
-                <p className="sub-text">Update your account information</p>
-              </div>
-              <button className="close-btn" onClick={closeModal}>&times;</button>
-            </div>
-            <form id="account-settings-form">
-              <div className="modal-body">
-                <label className="input-label">Full Name</label>
-                <input type="text" className="modal-input" defaultValue={user.name} />
-                <label className="input-label">Username</label>
-                <input type="text" className="modal-input" />
-                <label className="input-label">Email Address</label>
-                <input type="email" className="modal-input" />
-                <label className="input-label">Position</label>
-                <input type="text" className="modal-input" />
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn-cancel" onClick={closeModal}>Cancel</button>
-                <button type="submit" className="btn-save">Save Changes</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Change Password Modal */}
-      {activeModal === 'changePasswordModal' && (
-        <div className="modal-overlay" style={{ display: 'flex' }}>
-          <div className="modal-container">
-            <div className="modal-header">
-              <h3>Change Password</h3>
-              <button className="close-btn" onClick={closeModal}>&times;</button>
-            </div>
-            <form className="modal-body">
-              <label className="input-label">Current Password</label>
-              <input type={showCurrentPass ? "text" : "password"} className="modal-input" />
-              <label className="input-label">New Password</label>
-              <input type={showNewPass ? "text" : "password"} className="modal-input" />
-              <div className="modal-footer">
-                <button type="button" className="btn-cancel" onClick={closeModal}>Cancel</button>
-                <button type="submit" className="btn-save">Update Password</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* About / Terms / Privacy / Team Modals */}
-      {['aboutBrightModal', 'termsModal', 'privacyModal', 'aboutModal'].includes(activeModal) && (
-        <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)', position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1000 }}>
-          <div className="modal-content" style={{ backgroundColor: '#fff', margin: '10% auto', padding: '30px', width: '50%', borderRadius: '8px', position: 'relative' }}>
-            <span className="close" onClick={closeModal} style={{ position: 'absolute', right: '20px', top: '10px', fontSize: '28px', cursor: 'pointer' }}>&times;</span>
-            
-            {activeModal === 'aboutBrightModal' && (
-              <><h2>About BRIGHT</h2><p>BRIGHT (Budget Record Integrity using Generalized Hash-based Transparency) is a web-based financial management system designed to promote transparency...</p></>
-            )}
-            {activeModal === 'termsModal' && (
-              <><h2>Terms & Conditions</h2><ul style={{textAlign: 'left', marginLeft: '20px'}}><li>By using BRIGHT, users agree to follow all system rules on financial recording...</li><li>Administrators must approve only legitimate organization members.</li></ul></>
-            )}
-            {activeModal === 'privacyModal' && (
-              <><h2>Privacy Policy</h2><p>BRIGHT stores only essential information required for financial record integrity. All data is protected using cryptographic hashing...</p></>
-            )}
-            {activeModal === 'aboutModal' && (
-              <><h2>Team</h2><p>BRIGHT Development Team – BSCS 3A (2025)<br/><br/><strong>Project Manager:</strong> Erik James Medallada<br/><strong>Frontend:</strong> Ianna Erin Marquez, Cyrel Yvette Morales<br/><strong>Backend:</strong> Carla Mae Cardano, Jackielyn Lariestan</p></>
-            )}
-          </div>
-        </div>
-      )}
+        <Footer />
     </div>
   );
 };
