@@ -15,15 +15,18 @@ const Login = () => {
   const [forgotEmail, setForgotEmail] = useState('');
   const [modalSuccess, setModalSuccess] = useState('');
 
-  const handleLoginSubmit = async (e) => {
+const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate login logic
     setTimeout(() => {
         setIsLoading(false);
-        // After successful login, navigate to the admin dashboard
-        // navigate('/admin/overview'); 
+        
+        if (role === 'Admin') {
+            navigate('/admin/overview'); 
+        } else if (role === 'Validator') {
+            navigate('/admin/validation'); 
+        }
     }, 1500);
   };
 
