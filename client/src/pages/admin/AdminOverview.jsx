@@ -57,7 +57,6 @@ const AdminOverview = () => {
       const res = await fetch(`${API_BASE_URL}/transactions`);
       const data = await res.json();
       setTransactions(data);
-      */
     } catch (err) {
       console.error('Error loading transactions:', err);
     }
