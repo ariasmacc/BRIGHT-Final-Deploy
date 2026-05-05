@@ -1,23 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import brightLogo from '../../assets/bright-logo-v3.png';
-import Footer from '../../components/layout/Footer'; 
-
+import Footer from '../../components/layout/Footer';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   
-  // State for UI Toggles
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [activeModal, setActiveModal] = useState(null); 
   const [user, setUser] = useState({ name: 'User', role: 'Staff' });
-
-  // Password Visibility States
+  
+  const dropdownRef = useRef(null);
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
 
-  // Sync with LocalStorage for User Info
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
@@ -29,10 +26,24 @@ const AdminLayout = () => {
     }
   }, []);
 
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsUserDropdownOpen(false); 
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Logout Handler
   const handleLogout = (e) => {
     e.preventDefault();
     localStorage.removeItem('user');
-    navigate('/login');
+    setIsUserDropdownOpen(false);
+    navigate('/auth/login'); 
   };
 
   const closeModal = () => setActiveModal(null);
@@ -42,14 +53,15 @@ const AdminLayout = () => {
       {/* --- HEADER --- */}
       <header className="header">
         <div className="logo" id="header-logo">
-          <NavLink to="/admin/AdminOverview" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', color: 'inherit' }}>
+          {/* Inayos ang routing ng Logo papuntang overview */}
+          <NavLink to="/admin/overview" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', color: 'inherit' }}>
             <img src={brightLogo} alt="BRIGHT" />
             <h1 style={{ margin: 0, fontSize: '1.5em', color: 'white' }}>BRIGHT</h1>
           </NavLink>
           <div className="staff-portal">Staff Portal</div>
         </div>
 
-        <div className="user-section">
+        <div className="user-section" ref={dropdownRef}>
           <div className="role">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shield-icon" style={{ width: '18px', marginRight: '5px' }}>
               <path d="M12 2l7 4v6c0 5-3.58 9.74-7 10-3.42-.26-7-5-7-10V6l7-4z" />
@@ -69,7 +81,7 @@ const AdminLayout = () => {
           {/* User Profile Dropdown */}
           {isUserDropdownOpen && (
             <div className="dropdown-menu" id="userDropdown" style={{ display: 'block' }}>
-              <div className="dropdown-header">My Account</div>
+              <div className="dropdown-header" onClick={() => setIsUserDropdownOpen(false)} style={{ cursor: 'pointer' }}>My Account</div>
               <button className="dropdown-item" onClick={() => {setActiveModal('accountSettingsModal'); setIsUserDropdownOpen(false);}}>
                 Account Settings
               </button>
@@ -107,7 +119,7 @@ const AdminLayout = () => {
         <Outlet />
       </main>
 
-        <Footer />
+      <Footer />
     </div>
   );
 };
