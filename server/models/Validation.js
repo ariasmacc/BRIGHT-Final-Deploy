@@ -3,6 +3,8 @@ const db = require('../config/database');
 
 const Validation = {
   // --- INAYOS ANG 'getQueue' PARA IBALIK SA 'created_at' ---
+  // models/Validation.js
+
   getQueue: (callback) => {
     const sql = `
       SELECT
@@ -11,30 +13,30 @@ const Validation = {
       FROM (
         SELECT 
           ba.allocation_id AS id, ba.name, 'Allocation' AS type, 
-          COALESCE(c.name, 'Unknown Category') AS category, -- Added COALESCE
+          COALESCE(c.name, 'Unknown Category') AS category,
           ba.amount, 
-          COALESCE(u.full_name, 'Unknown User') AS submitted_by, -- Added COALESCE
+          COALESCE(u.full_name, 'Unknown User') AS submitted_by,
           ba.created_at AS date, 
           ba.priority,
           (SELECT COUNT(*) FROM Validations v WHERE v.item_id = ba.allocation_id AND v.item_type = 'allocation' AND v.decision = 'Approved') AS validations
         FROM BudgetAllocations ba
-        LEFT JOIN Users u ON ba.submitted_by_user_id = u.user_id -- Changed to LEFT JOIN
-        LEFT JOIN Categories c ON ba.category_id = c.category_id -- Changed to LEFT JOIN
+        LEFT JOIN Users u ON ba.submitted_by_user_id = u.user_id 
+        LEFT JOIN Categories c ON ba.category_id = c.category_id
         WHERE ba.status = 'Pending'
         
         UNION ALL
         
         SELECT 
           e.expense_id AS id, e.name AS name, 'Expense' AS type, 
-          COALESCE(c.name, 'Unknown Category') AS category, -- Added COALESCE
+          COALESCE(c.name, 'Unknown Category') AS category,
           e.amount, 
-          COALESCE(u.full_name, 'Unknown User') AS submitted_by, -- Added COALESCE
+          COALESCE(u.full_name, 'Unknown User') AS submitted_by,
           e.created_at AS date, 
           'Normal' AS priority,
           (SELECT COUNT(*) FROM Validations v WHERE v.item_id = e.expense_id AND v.item_type = 'expense' AND v.decision = 'Approved') AS validations
         FROM Expenses e
-        LEFT JOIN Users u ON e.submitted_by_user_id = u.user_id -- Changed to LEFT JOIN
-        LEFT JOIN Categories c ON e.category_id = c.category_id -- Changed to LEFT JOIN
+        LEFT JOIN Users u ON e.submitted_by_used_id = u.user_id -- <-- FIXED: Changed 'user' to 'used'
+        LEFT JOIN Categories c ON e.category_id = c.category_id
         WHERE e.status = 'Pending'
       ) AS item
       ORDER BY item.date DESC
@@ -43,7 +45,7 @@ const Validation = {
       if (err) console.error("SQL Error in Validation.getQueue:", err.message);
       callback(err, rows); 
     });
-  }, 
+  },
 
   // getSummary function (Inayos ang 'localtime' para sa 'validatedThisMonth')
   getSummary: (callback) => {

@@ -6,10 +6,11 @@ const crypto = require('crypto');
 // Siguraduhin na ang 'BRIGHTDatabase.db' ay ang file na dinownload mo galing Railway (na inedit mo)
 //const dbPath = path.resolve(__dirname, '..','data', 'BRIGHTDatabase.db'); //changed
 //const dbPath = path.join(__dirname, '..', 'data', 'BRIGHTDatabase.db');
-// This uses the folder where you run the command as the starting point
-const dbPath = path.join(process.cwd(), 'data', 'BRIGHTDatabase.db');
+// This tells Node: "Go to where this script is, go up one folder, then into data"
+const dbPath = path.resolve(__dirname, '..', 'data', 'BRIGHTDatabase.db');
 const db = new sqlite3.Database(dbPath);
 
+console.log("🔍 Checking database at:", dbPath);
 console.log("🕵️  STARTING REAL BLOCKCHAIN AUDIT (Tampering Detection)...\n");
 
 // 2. Kuhanin ang lahat ng blocks (Expenses at Allocations) at pagsamahin
@@ -45,7 +46,7 @@ const sql = `
         amount, 
         description,
         NULL as business_justification, -- Wala nito ang Expense
-        submitted_by_user_id,
+        submitted_by_used_id AS submitted_by_user_id,
         NULL as priority, -- Wala nito ang Expense
         budget_allocation_id,
         expense_date,

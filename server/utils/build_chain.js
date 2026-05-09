@@ -28,7 +28,7 @@ db.serialize(() => {
       SELECT * FROM (
         SELECT allocation_id AS id, 'Allocation' AS type, name, category_id, amount, description, business_justification, submitted_by_user_id, priority, NULL as budget_allocation_id, NULL as expense_date, NULL as vendor, NULL as receipt_number, previous_hash, hash, block_number, created_at FROM BudgetAllocations
         UNION ALL
-        SELECT expense_id AS id, 'Expense' AS type, name, category_id, amount, description, NULL as business_justification, submitted_by_user_id, NULL as priority, budget_allocation_id, expense_date, vendor, receipt_number, previous_hash, hash, block_number, created_at FROM Expenses
+        SELECT expense_id AS id, 'Expense' AS type, name, category_id, amount, description, NULL as business_justification, submitted_by_used_id AS submitted_by_user_id, NULL as priority, budget_allocation_id, expense_date, vendor, receipt_number, previous_hash, hash, block_number, created_at FROM Expenses
       ) ORDER BY block_number ASC
     `;
 

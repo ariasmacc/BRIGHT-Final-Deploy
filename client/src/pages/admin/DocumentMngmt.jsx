@@ -21,13 +21,20 @@ useEffect(() => {
   }, []);
 
   // Data Fetching
-const loadDocuments = async () => {
+  const loadDocuments = async () => {
     try {
-      const res = await fetch(`http://localhost:3000${API_BASE_URL}/documents`);
+      // FIX: Added the config object with credentials: 'include'
+      const res = await fetch(`http://localhost:3000${API_BASE_URL}/documents`, {
+        credentials: 'include'
+      });
+      
       if (!res.ok) throw new Error('Failed to fetch documents');
       const data = await res.json();
-      setAllDocuments(data);
-      setFilteredDocuments(data);
+      
+      // Safety check: ensure data is an array
+      const documentsArray = Array.isArray(data) ? data : [];
+      setAllDocuments(documentsArray);
+      setFilteredDocuments(documentsArray);
     } catch (err) {
       console.error('Error loading documents:', err);
       setAllDocuments([]);

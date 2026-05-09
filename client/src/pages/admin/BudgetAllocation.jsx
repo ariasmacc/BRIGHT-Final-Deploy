@@ -8,19 +8,18 @@ const BudgetAllocation = () => {
   const [selectedBudget, setSelectedBudget] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // --- API Base URL ---
-  const API_BASE_URL = '/api';
+  // --- FIXED: Added the full backend URL ---
+  const API_BASE_URL = 'http://localhost:3000/api';
 
   // --- Data Fetching ---
   const loadAllocations = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/budget/allocations`);
+      // FIX: Added credentials: 'include'
+      const res = await fetch(`${API_BASE_URL}/budget/allocations`, {
+        credentials: 'include'
+      });
       const data = await res.json();
-
-  // Log the data to see what the server is actually sending back    
-      console.log("Fetched Allocations:", data);
-      
-      setAllocations(data || []);
+      setAllocations(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error loading allocations:', err);
     } finally {
@@ -30,7 +29,10 @@ const BudgetAllocation = () => {
 
   const loadSummary = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/budget/summary`);
+      // FIX: Added credentials: 'include'
+      const res = await fetch(`${API_BASE_URL}/budget/summary`, {
+        credentials: 'include'
+      });
       const data = await res.json();
       setSummary({
         totalBudget: data.totalBudget || 0,
@@ -53,9 +55,10 @@ const BudgetAllocation = () => {
     e.preventDefault();
     const formData = new FormData(e.target);
 
-    // --- STEP 1: DEFINE THE VARIABLE ---
     const storedUser = JSON.parse(localStorage.getItem('user'));
-    const activeUserId = storedUser?.user_id || 1; // Default to 1 if not found, but ideally should handle this case better
+    
+    // NOTE: Based on your userController, the ID might be stored as 'id'
+    const activeUserId = storedUser?.id || storedUser?.user_id || 1;
 
     const data = {
       name: formData.get('budgetname'),
@@ -64,21 +67,26 @@ const BudgetAllocation = () => {
       priority: formData.get('priority'),
       description: formData.get('description'),
       businessJustification: formData.get('businessjustification'),
-      // Added user ID from localStorage (assuming user info is stored there after login)
       submitted_by_user_id: activeUserId
     };
 
-     // --- PUT THE LOG HERE ---
-    console.log("Submitting with User ID:", activeUserId); 
+    console.log("Submitting to backend with User ID:", activeUserId); 
 
     try {
+      // FIX: Added the correct URL and credentials: 'include'
       const res = await fetch(`${API_BASE_URL}/budget/allocations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // <--- IMPORTANT
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error('Failed to submit');
-      alert('Budget allocation submitted!');
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to submit');
+      }
+
+      alert('Budget allocation submitted successfully!');
       e.target.reset();
       loadAllocations();
       loadSummary();
@@ -89,9 +97,12 @@ const BudgetAllocation = () => {
 
   const handleViewDetails = async (id) => {
     setIsModalOpen(true);
-    setSelectedBudget(null); // Show loading state in modal
+    setSelectedBudget(null); 
     try {
-      const res = await fetch(`${API_BASE_URL}/budget/allocations/${id}`);
+      // FIX: Added credentials: 'include'
+      const res = await fetch(`${API_BASE_URL}/budget/allocations/${id}`, {
+        credentials: 'include'
+      });
       const data = await res.json();
       setSelectedBudget(data);
     } catch (err) {
@@ -99,6 +110,7 @@ const BudgetAllocation = () => {
     }
   };
 
+  // ... (Rest of your JSX code remains the same)
   return (
     <main className="budget-allocation-page" style={{ padding: '20px' }}>
       <div className="newBudget">

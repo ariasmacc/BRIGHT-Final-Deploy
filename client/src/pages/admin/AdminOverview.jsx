@@ -4,7 +4,7 @@ import Footer from '../../components/layout/Footer';
 import '../../index.css';
 import AdminLayout from '../../components/layout/AdminLayout';
 
-// 1. CHART.JS IMPORTS (Galing sa PublicOverview)
+// 1. CHART.JS IMPORTS
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -41,7 +41,7 @@ const AdminOverview = () => {
 
   const [transactions, setTransactions] = useState([]);
   const [utilization, setUtilization] = useState([]);
-  const [trend, setTrend] = useState([]); // DINAGDAG: Para sa Monthly Trend Chart
+  const [trend, setTrend] = useState([]); 
 
   // ==========================================
   // 2. EFFECT HOOK 
@@ -57,9 +57,12 @@ const AdminOverview = () => {
   // ==========================================
   const loadSummaryData = async () => {
     try {
-      // NOTE: Gamitin ang localhost:3000 kapag nagfe-fetch para kumonekta sa backend
-      const res = await fetch(`http://localhost:3000${API_BASE_URL}/overview/summary`);
+      // FIX 1: Added { credentials: 'include' } to send the JWT cookie
+      const res = await fetch(`http://localhost:3000${API_BASE_URL}/overview/summary`, {
+        credentials: 'include'
+      });
       const data = await res.json();
+      
       const totalBudget = data.totalBudget || 0;
       const totalSpent = data.totalSpent || 0;
       
@@ -70,7 +73,6 @@ const AdminOverview = () => {
         percentage: totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(0) : 0,
         pendingCount: data.pendingCount || 0
       });
-      // TINANGGAL YUNG EMPTY setSummary({}) DITO PARA HINDI MABURA ANG DATA
     } catch (err) {
       console.error('Error loading summary data:', err);
     }
@@ -78,9 +80,18 @@ const AdminOverview = () => {
 
   const loadRecentTransactions = async () => {
     try {
-      const res = await fetch(`http://localhost:3000${API_BASE_URL}/transactions`);
+      // FIX 1: Added { credentials: 'include' }
+      const res = await fetch(`http://localhost:3000${API_BASE_URL}/transactions`, {
+        credentials: 'include'
+      });
       const data = await res.json();
-      setTransactions(data);
+      
+      // FIX 2: Crash Guard - Only set if it's an actual array, otherwise fallback to empty array
+      if (Array.isArray(data)) {
+        setTransactions(data);
+      } else {
+        setTransactions([]);
+      }
     } catch (err) {
       console.error('Error loading transactions:', err);
     }
@@ -88,15 +99,21 @@ const AdminOverview = () => {
 
   const loadDashboardData = async () => {
     try {
-      // DINAGDAG: Sabay kukunin ang utilization at trend
+      // FIX 1: Added { credentials: 'include' } to both requests
       const [utilRes, trendRes] = await Promise.all([
-        fetch(`http://localhost:3000${API_BASE_URL}/overview/utilization`),
-        fetch(`http://localhost:3000${API_BASE_URL}/overview/spending-trend`)
+        fetch(`http://localhost:3000${API_BASE_URL}/overview/utilization`, { credentials: 'include' }),
+        fetch(`http://localhost:3000${API_BASE_URL}/overview/spending-trend`, { credentials: 'include' })
       ]);
 
-      if (utilRes.ok) setUtilization(await utilRes.json());
-      if (trendRes.ok) setTrend(await trendRes.json());
-      // TINANGGAL YUNG EMPTY setUtilization([]) DITO
+      if (utilRes.ok) {
+        const utilData = await utilRes.json();
+        setUtilization(Array.isArray(utilData) ? utilData : []);
+      }
+      
+      if (trendRes.ok) {
+        const trendData = await trendRes.json();
+        setTrend(Array.isArray(trendData) ? trendData : []);
+      }
     } catch (err) {
       console.error('Error loading dashboard data:', err);
     }
@@ -105,11 +122,12 @@ const AdminOverview = () => {
   // ==========================================
   // 4. CHART CONFIGURATIONS
   // ==========================================
+  // FIX 2: Added optional chaining (?.) just in case data is missing
   const categoryChartData = {
-    labels: utilization.map(c => c.category),
+    labels: utilization?.map(c => c.category) || [],
     datasets: [{
       label: 'Budget Allocated',
-      data: utilization.map(c => c.totalAllocated),
+      data: utilization?.map(c => c.totalAllocated) || [],
       backgroundColor: 'rgba(44, 62, 80, 0.9)',
       borderColor: 'rgba(44, 62, 80, 1)',
       borderWidth: 1
@@ -117,10 +135,10 @@ const AdminOverview = () => {
   };
 
   const trendChartData = {
-    labels: trend.map(d => new Date(d.month + '-02').toLocaleString('default', { month: 'short' })),
+    labels: trend?.map(d => new Date(d.month + '-02').toLocaleString('default', { month: 'short' })) || [],
     datasets: [{
       label: 'Total Spent',
-      data: trend.map(d => d.totalSpent),
+      data: trend?.map(d => d.totalSpent) || [],
       backgroundColor: 'rgba(44, 62, 80, 0.9)',
       borderColor: 'rgba(44, 62, 80, 1)',
       borderWidth: 1
@@ -174,7 +192,6 @@ const AdminOverview = () => {
         <div className="chart-card">
           <h3>Budget Allocation by Category</h3>
           <p className="subtitle">Current spending vs allocated amounts</p>
-          {/* IPINALIT ANG CHART DITO */}
           <div style={{ height: '300px' }}>
              <Bar data={categoryChartData} options={chartOptions} />
           </div>
@@ -183,7 +200,6 @@ const AdminOverview = () => {
         <div className="chart-card">
           <h3>Monthly Spending Trend</h3>
           <p className="subtitle">Spending patterns over the last 6 months</p>
-           {/* IPINALIT ANG CHART DITO */}
           <div style={{ height: '300px' }}>
              <Bar data={trendChartData} options={chartOptions} />
           </div>
@@ -195,8 +211,9 @@ const AdminOverview = () => {
           <h3>Budget Utilization by Category</h3>
           <p className="subtitle">Progress towards budget limits</p>
           <div id="budgetContainer">
-            {utilization.length === 0 ? (
-              <p>Loading utilization data...</p>
+            {/* FIX 2: Safely check if array has length */}
+            {(!utilization || utilization.length === 0) ? (
+              <p>No utilization data available.</p>
             ) : (
               utilization.map((cat, index) => {
                 const percentage = cat.totalAllocated > 0 ? ((cat.totalSpent / cat.totalAllocated) * 100).toFixed(0) : 0;
@@ -220,17 +237,18 @@ const AdminOverview = () => {
           <h3>Recent Transactions</h3>
           <p className="subtitle">Latest budget activities</p>
           <div id="transactionsContainer">
-            {transactions.length === 0 ? (
+            {/* FIX 2: Safely check if array has length */}
+            {(!transactions || transactions.length === 0) ? (
               <p>No recent transactions.</p>
             ) : (
               transactions.map((tx, index) => (
                 <div className="transaction-item" key={index}>
-                  <div className={`icon ${tx.type.toLowerCase()}`}></div>
+                  <div className={`icon ${tx.type?.toLowerCase()}`}></div>
                   <div className="details">
                     <strong>{tx.type}: {tx.name_or_vendor}</strong>
                     <small>{tx.category} • {new Date(tx.timestamp).toLocaleDateString()}</small>
                   </div>
-                  <div className="amount">₱{tx.amount.toLocaleString()}</div>
+                  <div className="amount">₱{tx.amount?.toLocaleString()}</div>
                 </div>
               ))
             )}

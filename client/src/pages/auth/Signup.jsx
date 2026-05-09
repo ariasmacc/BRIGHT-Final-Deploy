@@ -3,6 +3,8 @@ import '../../index.css';
 import { Link, useNavigate } from 'react-router-dom'; 
 
 const Signup = () => {
+  const navigate = useNavigate(); // Added to route the user correctly after signup
+  
   const [fullname, setFullname] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -16,7 +18,7 @@ const Signup = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignupSubmit = (e) => {
+  const handleSignupSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -26,11 +28,40 @@ const Signup = () => {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
-      alert('Registration successful! Please wait for the email for account approval.');
-      window.location.href = '/login'; 
+
+    try {
+      // 1. Send the actual request to the backend
+      const response = await fetch('http://localhost:3000/api/users/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          full_name: fullname, // Mapped correctly for the backend
+          username: username,
+          email: email,
+          position: position,
+          role: role,
+          password: password
+        })
+      });
+
+      const data = await response.json();
+
+      // 2. Check if backend said OK
+      if (response.ok) {
+        alert('Registration successful! Please wait for account approval.');
+        navigate('/login'); 
+      } else {
+        // Show any validation errors from the backend
+        setErrorMessage(data.error || data.msg || 'Registration failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('Signup error:', err);
+      setErrorMessage('Cannot connect to the server. Is it running?');
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -89,7 +120,7 @@ const Signup = () => {
               </svg>
             </div>
 
-            {errorMessage && <div className="alert error" style={{marginTop: '15px'}}>{errorMessage}</div>}
+            {errorMessage && <div className="alert error" style={{marginTop: '15px', color: '#dc2626', backgroundColor: '#fee2e2', padding: '10px', borderRadius: '6px', textAlign: 'center', border: '1px solid #f87171'}}>{errorMessage}</div>}
 
             <button type="submit" className="signup-btn" style={{ marginTop: '15px' }} disabled={isLoading}>
               {isLoading ? 'Signing Up...' : 'Sign Up'}

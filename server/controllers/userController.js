@@ -80,70 +80,48 @@ exports.login = (req, res) => {
       }
 
       if (isMatch) {
-        // --- 2FA IMPLEMENTATION START ---
+        // 1. Create the VIP Pass (JWT Token)
+        const payload = {
+          userId: user.user_id,
+          username: user.username,
+          role: user.role,
+          name: user.full_name 
+        };
+
+        // Sign the token using your secret from .env
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+
+        // 2. STICK THE COOKIE TO THE BROWSER
+        // This is the most important part! This fixes the 401 errors.
+        res.cookie('token', token, {
+          httpOnly: true, 
+          secure: process.env.NODE_ENV === 'production', 
+          sameSite: 'lax', 
+          maxAge: 3600000 // 1 hour
+        });
+
+        // 3. (Optional) Still send the email notification so you know it works
         const transporter = req.app.get('transporter');
-        
-        // Safety Check
-        if (!transporter) {
-             console.error('FATAL ERROR: Nodemailer transporter not found.');
-             return res.status(500).json({ error: 'Server configuration error (Email).' });
+        if (transporter) {
+            transporter.sendMail({
+                from: `"BRIGHT System" <${process.env.EMAIL_USER}>`,
+                to: user.email,
+                subject: 'New Login Detected',
+                html: `<p>Hello ${user.full_name}, you have successfully logged into the BRIGHT Dashboard.</p>`
+            }).catch(err => console.error("Email notification failed:", err));
         }
 
-        // 1. Generate 6-digit code
-        const twoFACode = Math.floor(100000 + Math.random() * 900000).toString();
-        const twoFACodeHashed = crypto.createHash('sha256').update(twoFACode).digest('hex');
-        
-        // 2. Set expiry time (3 minutes)
-        const expires = new Date(Date.now() + 3 * 60 * 1000)
-          .toISOString().slice(0, 19).replace('T', ' ');
-
-        // 3. Save hashed code to DB
-        // IMPORTANT: Ginawa kong async ang callback function na ito
-        User.saveTwoFACode(user.user_id, twoFACodeHashed, expires, async (err) => {
-            if (err) {
-                console.error("Database error saving 2FA code:", err.message);
-                return res.status(500).json({ error: 'Error saving 2FA code.' });
-            }
-            
-            // 4. Send email (WITH AWAIT)
-            // Ngayon, hihintayin muna natin matapos ito bago mag-reply sa user
-            try {
-                console.log(`⏳ Attempting to send OTP to ${user.email}...`);
-                
-                let info = await transporter.sendMail({
-                    from: `"BRIGHT 2FA" <${process.env.EMAIL_USER}>`,
-                    to: user.email,
-                    subject: 'Your BRIGHT Login Verification Code',
-                    html: `
-                        <div style="font-family: Arial, sans-serif; padding: 20px;">
-                            <h2>Login Verification</h2>
-                            <p>Hello ${user.full_name},</p>
-                            <p>To complete your login, please use the following code:</p>
-                            <h1 style="color: #2c3e50; letter-spacing: 5px;">${twoFACode}</h1>
-                            <p>This code is valid for 3 minutes.</p>
-                        </div>
-                    `
-                });
-
-                console.log("✅ Email sent successfully! MessageID:", info.messageId);
-
-                // 5. Return success ONLY after email is sent
-                res.json({
-                    message: '2FA code sent to email.',
-                    requires2FA: true,
-                    userId: user.user_id,
-                    tempUser: { username: user.username, role: user.role } 
-                });
-
-            } catch (emailError) {
-                console.error("❌ FAILED TO SEND EMAIL:", emailError);
-                // Dito malalaman ng user na may mali, imbes na maghintay sa wala
-                return res.status(500).json({ 
-                    error: 'Failed to send verification email. Please contact Admin.' 
-                });
-            }
+        // 4. Tell the Frontend to go ahead and open the door
+        return res.json({
+          message: 'Login successful!',
+          user: {
+              id: user.user_id,
+              name: user.full_name,
+              username: user.username,
+              role: user.role,
+              position: user.position || 'Staff'
+          }
         });
-        // --- 2FA IMPLEMENTATION END ---
       } else {
         console.warn(`Password mismatch detected for user ${username}`);
         return res.status(401).json({ error: 'Invalid username, password, or role' });

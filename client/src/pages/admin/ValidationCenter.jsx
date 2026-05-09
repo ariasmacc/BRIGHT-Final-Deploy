@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import '../../index.css';
 
 const ValidationCenter = () => {
-  const API_BASE_URL = '/api'; 
+  const API_BASE_URL = 'http://localhost:3000/api'; // Inayos para sa fetch calls
 
   // ==========================================
-  // 1. REACT STATE (Pampalit sa document.getElementById)
+  // 1. REACT STATE
   // ==========================================
   const [queue, setQueue] = useState([]);
   const [summary, setSummary] = useState({
-    pendingCount: 'Loading...',
-    highPriorityCount: 'Loading...',
-    validatedThisMonth: 'Loading...',
-    readyForApproval: 'Loading...'
+    pendingCount: 0,
+    highPriorityCount: 0,
+    validatedThisMonth: 0,
+    readyForApproval: 0
   });
   const [activeFilter, setActiveFilter] = useState('all');
   
@@ -22,7 +22,7 @@ const ValidationCenter = () => {
   const [comments, setComments] = useState('');
 
   // ==========================================
-  // 2. useEffect (Pampalit sa DOMContentLoaded)
+  // 2. useEffect
   // ==========================================
   useEffect(() => {
     loadQueue();
@@ -32,42 +32,29 @@ const ValidationCenter = () => {
   // ==========================================
   // 3. FUNCTIONS / API CALLS
   // ==========================================
-const loadQueue = async () => {
+  const loadQueue = async () => {
     try {
-      // Assuming your backend server is on port 3000
-      const res = await fetch(`http://localhost:3000${API_BASE_URL}/validation/queue`); 
-      
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
+      const res = await fetch(`${API_BASE_URL}/validation/queue`, {
+        credentials: 'include'
+      });
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setQueue(data);
     } catch (err) {
       console.error('Error loading validation queue:', err);
-      // Optional: Set to empty array so the table shows "No data yet" instead of loading forever
-      // setQueue([]); 
     }
   };
 
   const loadSummary = async () => {
     try {
-      const res = await fetch(`http://localhost:3000${API_BASE_URL}/validation/summary`);
-      
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
+      const res = await fetch(`${API_BASE_URL}/validation/summary`, {
+        credentials: 'include'
+      });
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setSummary(data);
     } catch (err) {
       console.error('Error loading validation summary:', err);
-      setSummary({
-        pendingCount: '0',
-        highPriorityCount: '0',
-        validatedThisMonth: '0',
-        readyForApproval: '0'
-      });
     }
   };
 
@@ -87,12 +74,30 @@ const loadQueue = async () => {
       alert('Please provide validation comments.');
       return;
     }
+    
+    // Dito ilalagay ang actual fetch logic para sa submitDecision balang araw
     alert(`Item ${decision.toLowerCase()} successfully!`);
     closeValidationPopup();
+    loadQueue(); // Refresh the list
+    loadSummary();
   };
 
   // ==========================================
-  // 4. JSX / HTML (Yung mismong UI)
+  // 4. DYNAMIC FILTERING & COUNTS
+  // ==========================================
+  const filteredQueue = queue.filter(item => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'High') return item.priority === 'High';
+    return item.type === activeFilter;
+  });
+
+  const allCount = queue.length;
+  const allocationCount = queue.filter(i => i.type === 'Allocation').length;
+  const expenseCount = queue.filter(i => i.type === 'Expense').length;
+  const highPrioCount = queue.filter(i => i.priority === 'High').length;
+
+  // ==========================================
+  // 5. JSX / HTML
   // ==========================================
   return (
     <main className="validation-center-page">
@@ -133,16 +138,16 @@ const loadQueue = async () => {
           <div className="validation-tabs">
             <div className="tabs-container">
               <button className={`tab ${activeFilter === 'all' ? 'active' : ''}`} onClick={() => setActiveFilter('all')}>
-                All Pending <span className="count-badge">0</span>
+                All Pending <span className="count-badge">{allCount}</span>
               </button>
               <button className={`tab ${activeFilter === 'Allocation' ? 'active' : ''}`} onClick={() => setActiveFilter('Allocation')}>
-                Budget Allocations <span className="count-badge">0</span>
+                Budget Allocations <span className="count-badge">{allocationCount}</span>
               </button>
               <button className={`tab ${activeFilter === 'Expense' ? 'active' : ''}`} onClick={() => setActiveFilter('Expense')}>
-                Expenses <span className="count-badge">0</span>
+                Expenses <span className="count-badge">{expenseCount}</span>
               </button>
               <button className={`tab ${activeFilter === 'High' ? 'active' : ''}`} onClick={() => setActiveFilter('High')}>
-                High Priority <span className="count-badge">0</span>
+                High Priority <span className="count-badge">{highPrioCount}</span>
               </button>
             </div>
           </div>
@@ -165,15 +170,24 @@ const loadQueue = async () => {
               </tr>
             </thead>
             <tbody>
-              {/* Kung may laman ang queue, mag-m-map tayo. Kung wala, loading muna */}
-              {queue.length === 0 ? (
-                <tr><td colSpan="10">Loading validation queue... (No data yet)</td></tr>
+              {filteredQueue.length === 0 ? (
+                <tr><td colSpan="10" style={{textAlign: 'center', padding: '20px'}}>No items found for this category.</td></tr>
               ) : (
-                queue.map((item) => (
-                  <tr key={item.id}>
+                filteredQueue.map((item) => (
+                  <tr key={`${item.id}-${item.type}`}>
                     <td>{item.id}</td>
                     <td>{item.name}</td>
-                    {/* ... other table data here ... */}
+                    <td><span className={`type-badge ${item.type.toLowerCase()}`}>{item.type}</span></td>
+                    <td>{item.category}</td>
+                    <td>₱{parseFloat(item.amount).toLocaleString()}</td>
+                    <td>{item.submitted_by}</td>
+                    <td>{new Date(item.date).toLocaleDateString()}</td>
+                    <td>
+                        <span className={`priority-tag ${item.priority?.toLowerCase()}`}>
+                            {item.priority}
+                        </span>
+                    </td>
+                    <td><span className="valid-count">{item.validations} / 2</span></td>
                     <td>
                       <button className="validate-btn" onClick={() => openValidationPopup(item)}>
                         Validate

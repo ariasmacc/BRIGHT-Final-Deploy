@@ -1,14 +1,21 @@
-require('dotenv').config();
+// 1. First, we import the path module
+const path = require('path'); 
 
-// CRITICAL: Sets the server timezone to Philippine time
+// 2. Now that 'path' is defined, we can safely use it to find your .env
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
+// 3. Set the timezone
 process.env.TZ = 'Asia/Manila';
 console.log("Server time set to:", new Date().toString());
 
+// 4. Import the rest of your tools
 const express = require('express');
-const path = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const fs = require('fs');
+
+// IMPORTANT: Do NOT include 'const path = require('path');' again 
+// further down in the file, or it will cause a "Redeclaration" error.
 
 // --- [UPDATED] FILE RESCUE OPERATION (Database + Uploads) ---
 function syncUploadsToVolume() {
@@ -102,58 +109,49 @@ if (!fs.existsSync(UPLOAD_DIR)) {
 }
 
 app.use('/uploads', express.static(UPLOAD_DIR));
-app.use('/app/data/uploads', express.static(UPLOAD_DIR));
-app.use('/app//uploads', express.static(UPLOAD_DIR));
 
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 // --- Middleware ---
-app.use(cors()); 
+// REPLACE the old app.use(cors()) with this:
+const corsOptions = {
+    origin: 'http://localhost:5173', // Your React Dev Port
+    credentials: true,               // REQUIRED: Allows cookies to be sent back and forth
+};
+app.use(cors(corsOptions)); 
+
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
-app.use(express.static(path.join(__dirname, 'uploads')));
-app.use(cookieParser());
+app.use(cookieParser()); // Make sure this is right below CORS
 
-// --- HTTP EMAIL TRANSPORTER ---
-const transporter = {
-    verify: (callback) => {
-        console.log("✅ HTTP EMAIL MODE: Ready to bypass firewall via Brevo API.");
-        if (callback) callback(null, true);
-    },
-    sendMail: async (mailOptions) => {
-        console.log(`📤 Sending email via HTTP API to: ${mailOptions.to}`);
-        try {
-            if (!process.env.EMAIL_API_KEY) {
-                throw new Error("Missing EMAIL_API_KEY in .env");
-            }
-            const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-                method: 'POST',
-                headers: {
-                    'accept': 'application/json',
-                    'api-key': process.env.EMAIL_API_KEY,
-                    'content-type': 'application/json'
-                },
-                body: JSON.stringify({
-                    sender: { name: "BRIGHT System", email: process.env.EMAIL_USER },
-                    to: [{ email: mailOptions.to }],
-                    subject: mailOptions.subject,
-                    htmlContent: mailOptions.html || mailOptions.text
-                })
-            });
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error("❌ Brevo API Error:", errorText);
-                throw new Error(`API Error: ${response.status} ${response.statusText}`);
-            }
-            const data = await response.json();
-            console.log("✅ Email Sent via API! ID:", data.messageId);
-            return { messageId: data.messageId }; 
-        } catch (err) {
-            console.error("❌ HTTP Email Failed:", err);
-            throw err;
-        }
+console.log("Checking Env:", process.env.EMAIL_USER ? "✅ User Found" : "❌ User Missing");
+console.log("Checking Env:", process.env.EMAIL_PASS ? "✅ Pass Found" : "❌ Pass Missing");
+
+// --- DEBUG CHECK: Let's see if the variables are actually loading ---
+console.log("DEBUG: Testing .env load...");
+console.log("EMAIL_USER exists:", process.env.EMAIL_USER ? "✅ YES" : "❌ NO");
+console.log("EMAIL_PASS exists:", process.env.EMAIL_PASS ? "✅ YES" : "❌ NO");
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    host: 'smtp.gmail.com', // Explicitly setting the host can help
+    port: 465,
+    secure: true,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     }
-};
+});
+
+// Verify connection configuration
+transporter.verify((error, success) => {
+    if (error) {
+        console.error("❌ Email Transporter Error:", error);
+    } else {
+        console.log("✅ Gmail Server is ready to send OTPs!");
+    }
+});
+
 app.set('transporter', transporter);
 
 // =====================================================================
@@ -181,7 +179,7 @@ app.use('/api/validation', auth, checkRole('Admin', 'Validator'), validation);
 app.use('/api/users', users); 
 
 // --- [NEW] AUDIT TRAIL VIEWER ---
-app.get('/admin/view-audit-ledger', auth, checkRole('Admin', 'Validator'), (req, res) => {
+app.get('/admin/view-audit-ledger', (req, res) => {
     let logPath = process.env.RAILWAY_ENVIRONMENT 
         ? '/app/data/blockchain_audit_ledger.txt' 
         : path.join(__dirname, 'blockchain_audit_ledger.txt');
