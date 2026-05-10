@@ -37,16 +37,12 @@ const AdminOverview = () => {
 
   const [transactions, setTransactions] = useState([]);
   const [utilization, setUtilization] = useState([]);
-6<<<<<<< Fixing-backend
   const [trend, setTrend] = useState([]); 
-=======
-  const [trend, setTrend] = useState([]);
->>>>>>> main
 
   useEffect(() => {
     loadSummaryData();
     loadRecentTransactions();
-    loadDashboardData();61234589pp122ppp;epp;eepppppp;s112ss1ppp vpp21cn 21pe122121222hk;;hke1m,.ecnm;p1212ppe1,.pMeecnpp=;11pek;;kppp;pekeeepse;ke12e12p1es=c
+    loadDashboardData();
   }, []);
 
   const loadSummaryData = async () => {
