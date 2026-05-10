@@ -18,7 +18,7 @@ const ValidatorLayout = () => {
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      try {
+      try { 
         setUser(JSON.parse(savedUser));
       } catch (e) {
         console.error("Failed to parse user data");
