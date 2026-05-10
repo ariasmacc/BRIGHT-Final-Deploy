@@ -7,13 +7,17 @@ const BudgetAllocation = () => {
   const [selectedBudget, setSelectedBudget] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const API_BASE_URL = '/api';
+  // --- FIXED: Added the full backend URL ---
+  const API_BASE_URL = 'http://localhost:3000/api';
 
   const loadAllocations = async () => {
     try {
-      const res = await fetch(`http://localhost:3000${API_BASE_URL}/budget/allocations`);
+      // FIX: Added credentials: 'include'
+      const res = await fetch(`${API_BASE_URL}/budget/allocations`, {
+        credentials: 'include'
+      });
       const data = await res.json();
-      setAllocations(data || []);
+      setAllocations(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error loading allocations:', err);
     } finally {
@@ -23,7 +27,10 @@ const BudgetAllocation = () => {
 
   const loadSummary = async () => {
     try {
-      const res = await fetch(`http://localhost:3000${API_BASE_URL}/budget/summary`);
+      // FIX: Added credentials: 'include'
+      const res = await fetch(`${API_BASE_URL}/budget/summary`, {
+        credentials: 'include'
+      });
       const data = await res.json();
       setSummary({
         totalBudget: data.totalBudget || 0,
@@ -44,8 +51,11 @@ const BudgetAllocation = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+
     const storedUser = JSON.parse(localStorage.getItem('user'));
-    const activeUserId = storedUser?.user_id || 1; 
+    
+    // NOTE: Based on your userController, the ID might be stored as 'id'
+    const activeUserId = storedUser?.id || storedUser?.user_id || 1;
 
     const data = {
       name: formData.get('budgetname'),
@@ -57,14 +67,23 @@ const BudgetAllocation = () => {
       submitted_by_user_id: activeUserId
     };
 
+    console.log("Submitting to backend with User ID:", activeUserId); 
+
     try {
-      const res = await fetch(`http://localhost:3000${API_BASE_URL}/budget/allocations`, {
+      // FIX: Added the correct URL and credentials: 'include'
+      const res = await fetch(`${API_BASE_URL}/budget/allocations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // <--- IMPORTANT
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error('Failed to submit');
-      alert('Budget allocation submitted!');
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to submit');
+      }
+
+      alert('Budget allocation submitted successfully!');
       e.target.reset();
       loadAllocations();
       loadSummary();
@@ -77,7 +96,10 @@ const BudgetAllocation = () => {
     setIsModalOpen(true);
     setSelectedBudget(null); 
     try {
-      const res = await fetch(`http://localhost:3000${API_BASE_URL}/budget/allocations/${id}`);
+      // FIX: Added credentials: 'include'
+      const res = await fetch(`${API_BASE_URL}/budget/allocations/${id}`, {
+        credentials: 'include'
+      });
       const data = await res.json();
       setSelectedBudget(data);
     } catch (err) {
@@ -85,6 +107,7 @@ const BudgetAllocation = () => {
     }
   };
 
+  // ... (Rest of your JSX code remains the same)
   return (
     <main className="expense-page">
       <div className="expense-recording-page">

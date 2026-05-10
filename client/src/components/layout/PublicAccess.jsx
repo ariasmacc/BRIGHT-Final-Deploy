@@ -109,7 +109,7 @@ const PublicAccess = () => {
             Ianna Erin Marquez<br />
             Cyrel Yvette Morales <br />
 
-            <br />For support: <a href="mailto:bright.project.support@gmail.com">bright.project.support@gmail.com</a>
+            <br />For support: <a href="mailto:bright.system.dev@gmail.com">bright.system.dev@gmail.com</a>
           </p>
         </div>
       </div>

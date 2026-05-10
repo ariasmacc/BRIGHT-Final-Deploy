@@ -5,7 +5,8 @@ const UserMngmnt = () => {
     const [users, setUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const API_BASE_URL = '/api/users'; 
+    const BACKEND_URL = 'http://localhost:3000';
+    const API_BASE_URL = '/api/users';
 
     useEffect(() => {
         const link = document.createElement('link');
@@ -24,7 +25,10 @@ const UserMngmnt = () => {
 
     const loadSummaryData = async () => {
         try {
-            const response = await fetch(`http://localhost:3000${API_BASE_URL}/summary`);
+            // FIX: Added BACKEND_URL and credentials
+            const response = await fetch(`${BACKEND_URL}${API_BASE_URL}/summary`, {
+                credentials: 'include'
+            });
             if (!response.ok) throw new Error('Failed to fetch summary');
             const data = await response.json();
             setSummary({
@@ -39,7 +43,10 @@ const UserMngmnt = () => {
 
     const loadUserRequests = async () => {
         try {
-            const response = await fetch(`http://localhost:3000${API_BASE_URL}/requests`);
+            // FIX: Added BACKEND_URL and credentials
+            const response = await fetch(`${BACKEND_URL}${API_BASE_URL}/requests`, {
+                credentials: 'include'
+            });
             if (!response.ok) throw new Error('Failed to fetch requests');
             const data = await response.json();
             setUsers(data);
@@ -52,9 +59,11 @@ const UserMngmnt = () => {
         if (!window.confirm(`Are you sure you want to ${newStatus} this user?`)) return;
 
         try {
-            const response = await fetch(`http://localhost:3000${API_BASE_URL}/status/${userId}`, {
+            // FIX: Added BACKEND_URL and credentials
+            const response = await fetch(`${BACKEND_URL}${API_BASE_URL}/status/${userId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', // <-- THIS IS CRITICAL
                 body: JSON.stringify({ newStatus })
             });
 
@@ -69,7 +78,8 @@ const UserMngmnt = () => {
             alert(`Error: ${error.message}`);
         }
     };
-
+    
+    // Helper: Formatting
     const formatDate = (d) => new Date(d).toLocaleDateString('en-US');
     const formatTime = (d) => new Date(d).toLocaleTimeString('en-US', { 
         hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true 

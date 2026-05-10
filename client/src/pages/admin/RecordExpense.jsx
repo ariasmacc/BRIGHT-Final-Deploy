@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
 const RecordExpense = () => {
-  const API_BASE_URL = '/api'; 
 
   const [expenses, setExpenses] = useState([]);
   const [summary, setSummary] = useState({
@@ -22,10 +21,15 @@ const RecordExpense = () => {
     loadExpenseSummary();
     loadDropdowns();
   }, []);
+// --- Updated API Base URL ---
+  const API_BASE_URL = 'http://localhost:3000/api'; 
 
+  // --- Updated Data Fetching ---
   const loadExpenses = async () => {
     try {
-      const res = await fetch(`http://localhost:3000${API_BASE_URL}/expenses`);
+      const res = await fetch(`${API_BASE_URL}/expenses`, {
+        credentials: 'include' // <--- ADD THIS
+      });
       if (!res.ok) throw new Error('Failed to fetch expenses');
       const data = await res.json();
       setExpenses(data);
@@ -36,7 +40,9 @@ const RecordExpense = () => {
 
   const loadExpenseSummary = async () => {
     try {
-      const res = await fetch(`http://localhost:3000${API_BASE_URL}/expenses/summary`);
+      const res = await fetch(`${API_BASE_URL}/expenses/summary`, {
+        credentials: 'include' // <--- ADD THIS
+      });
       if (res.ok) {
         const data = await res.json();
         setSummary(data);
@@ -49,14 +55,23 @@ const RecordExpense = () => {
   const loadDropdowns = async () => {
     try {
       const [budgetRes, catRes] = await Promise.all([
-        fetch(`http://localhost:3000${API_BASE_URL}/budget/allocations`),
-        fetch(`http://localhost:3000${API_BASE_URL}/categories`)
+        fetch(`${API_BASE_URL}/budget/allocations`, { credentials: 'include' }),
+        fetch(`${API_BASE_URL}/categories`, { credentials: 'include' })
       ]);
+
       if (budgetRes.ok && catRes.ok) {
         const budgets = await budgetRes.json();
         const categories = await catRes.json();
+
+        // LOGIC CHECK: 
+        // We only show 'Approved' budgets because you can't spend money 
+        // that hasn't been validated yet.
+        const approvedBudgets = budgets.filter(b => b.status === 'Approved');
+        
+        console.log("Found Approved Budgets:", approvedBudgets.length);
+
         setDropdowns({
-          budgets: budgets.filter(b => b.status === 'Approved'),
+          budgets: approvedBudgets,
           categories: categories.filter(c => c.name !== 'Budget' && c.name !== 'Reports')
         });
       }
@@ -64,7 +79,7 @@ const RecordExpense = () => {
       console.error('Error loading dropdowns:', err);
     }
   };
-
+  // --- Form & File Handlers ---
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     setSelectedFiles(prev => [...prev, ...files]);
@@ -96,6 +111,7 @@ const RecordExpense = () => {
     try {
       const res = await fetch(`http://localhost:3000${API_BASE_URL}/expenses`, {
         method: 'POST',
+        credentials: 'include',
         body: formData
       });
       if (!res.ok) throw new Error('Failed to submit');
@@ -114,7 +130,9 @@ const RecordExpense = () => {
     setIsModalOpen(true);
     setLoadingModal(true);
     try {
-      const res = await fetch(`http://localhost:3000${API_BASE_URL}/expenses/${id}`);
+      const res = await fetch(`${API_BASE_URL}/expenses/${id}`, {
+        credentials: 'include'
+      });
       if (res.ok) {
         const data = await res.json();
         setModalData(data);

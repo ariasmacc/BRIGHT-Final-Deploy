@@ -15,32 +15,48 @@ const Login = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [modalSuccess, setModalSuccess] = useState('');
-
 const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg(''); 
     
-    // Simulate login logic with DUMMY AUTHENTICATION
-    setTimeout(() => {
-        setIsLoading(false);
-        
-        if (role === 'Admin') {
-            if (username === 'SEadmin' && password === 'password123') {
+    try {
+        // 1. Send the actual request to your backend
+        const response = await fetch('http://localhost:3000/api/users/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include', // CRITICAL: This tells the browser to accept the cookie!
+            body: JSON.stringify({ 
+                username: username, // Make sure this matches what your backend expects
+                password: password,
+                role: role
+            })
+        });
+
+        const data = await response.json();
+
+        // 2. Check if the backend said "OK"
+        if (response.ok) {
+            // The browser now has the secure cookie. Route them to the dashboard.
+            if (role === 'Admin') {
                 navigate('/admin/overview'); 
             } else {
-                setErrorMsg('Invalid Admin username or password!');
-            }
-        } else if (role === 'Validator') {
-            if (username === 'validator' && password === 'password123') {
                 navigate('/admin/validation'); 
-            } else {
-                setErrorMsg('Invalid Validator username or password!');
             }
+        } else {
+            // Show the error message from the backend (e.g., "User not found")
+            setErrorMsg(data.error || data.msg || 'Invalid credentials. Please try again.');
         }
-    }, 1000); 
-  };
 
+    } catch (err) {
+        console.error('Login error:', err);
+        setErrorMsg('Cannot connect to the server. Is it running?');
+    } finally {
+        setIsLoading(false);
+    }
+};
   return (
     <div className="signup-body" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div className="signup-page-container">
