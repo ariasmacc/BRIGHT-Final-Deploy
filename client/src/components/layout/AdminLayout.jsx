@@ -53,7 +53,6 @@ const AdminLayout = () => {
       {/* --- HEADER --- */}
       <header className="header">
         <div className="logo" id="header-logo">
-          {/* Inayos ang routing ng Logo papuntang overview */}
           <NavLink to="/admin/overview" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', color: 'inherit' }}>
             <img src={brightLogo} alt="BRIGHT" />
             <h1 style={{ margin: 0, fontSize: '1.5em', color: 'white' }}>BRIGHT</h1>
@@ -80,7 +79,7 @@ const AdminLayout = () => {
 
           {/* User Profile Dropdown */}
           {isUserDropdownOpen && (
-            <div className="dropdown-menu" id="userDropdown" style={{ display: 'block' }}>
+            <div className={`dropdown-menu ${isUserDropdownOpen ? 'show' : ''}`} id="userDropdown">
               <div className="dropdown-header" onClick={() => setIsUserDropdownOpen(false)} style={{ cursor: 'pointer' }}>My Account</div>
               <button className="dropdown-item" onClick={() => {setActiveModal('accountSettingsModal'); setIsUserDropdownOpen(false);}}>
                 Account Settings
@@ -120,6 +119,93 @@ const AdminLayout = () => {
       </main>
 
       <Footer />
+
+      {/* --- ACCOUNT SETTINGS MODAL --- */}
+      <div className={`modal-overlay ${activeModal === 'accountSettingsModal' ? 'active' : ''}`} onClick={closeModal}>
+        <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <div>
+              <h3>Account Settings</h3>
+              <p className="sub-text">Update your profile information</p>
+            </div>
+            <button className="close-btn" onClick={closeModal}>&times;</button>
+          </div>
+          <div className="modal-body">
+            <div className="form-group">
+              <label className="input-label">Full Name</label>
+              <input type="text" className="modal-input" value={user.name} readOnly />
+              <p className="field-hint">Your name as it appears in the system</p>
+            </div>
+            <div className="form-group">
+              <label className="input-label">Role</label>
+              <input type="text" className="modal-input read-only" value={user.role} readOnly />
+              <p className="field-hint">Your assigned administrative role</p>
+            </div>
+          </div>
+          <div className="modal-footer">
+            <button className="btn-secondary" onClick={closeModal} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Close</button>
+            <button className="btn-primary" style={{ background: '#0f172a', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Save Changes</button>
+          </div>
+        </div>
+      </div>
+
+      {/* --- CHANGE PASSWORD MODAL --- */}
+      <div className={`modal-overlay ${activeModal === 'changePasswordModal' ? 'active' : ''}`} onClick={closeModal}>
+        <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <div>
+              <h3>Change Password</h3>
+              <p className="sub-text">Secure your account with a new password</p>
+            </div>
+            <button className="close-btn" onClick={closeModal}>&times;</button>
+          </div>
+          <div className="modal-body">
+            <div className="form-group">
+              <label className="input-label">Current Password</label>
+              <div className="password-wrapper">
+                <input 
+                  type={showCurrentPass ? "text" : "password"} 
+                  className="modal-input" 
+                  placeholder="Enter current password" 
+                />
+                <span className="eye-icon" onClick={() => setShowCurrentPass(!showCurrentPass)}>
+                  {showCurrentPass ? '👁️' : '👁️‍🗨️'}
+                </span>
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="input-label">New Password</label>
+              <div className="password-wrapper">
+                <input 
+                  type={showNewPass ? "text" : "password"} 
+                  className="modal-input" 
+                  placeholder="Enter new password" 
+                />
+                <span className="eye-icon" onClick={() => setShowNewPass(!showNewPass)}>
+                  {showNewPass ? '👁️' : '👁️‍🗨️'}
+                </span>
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="input-label">Confirm New Password</label>
+              <div className="password-wrapper">
+                <input 
+                  type={showConfirmPass ? "text" : "password"} 
+                  className="modal-input" 
+                  placeholder="Confirm new password" 
+                />
+                <span className="eye-icon" onClick={() => setShowConfirmPass(!showConfirmPass)}>
+                  {showConfirmPass ? '👁️' : '👁️‍🗨️'}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="modal-footer">
+            <button className="btn-secondary" onClick={closeModal} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
+            <button className="btn-primary" style={{ background: '#0f172a', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Update Password</button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
