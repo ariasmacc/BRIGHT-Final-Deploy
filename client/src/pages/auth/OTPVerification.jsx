@@ -11,7 +11,8 @@ const OTPVerification = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const API_BASE_URL = '/api'; 
+    // Use absolute URL to avoid proxy issues if not configured
+    const API_BASE_URL = 'http://localhost:3000/api'; 
 
     // Extract userId from URL on mount
     const query = new URLSearchParams(location.search);
@@ -20,7 +21,7 @@ const OTPVerification = () => {
     useEffect(() => {
         if (!userId) {
             alert("Error: User ID missing. Please log in again.");
-            navigate('/login');
+            navigate('/auth/login');
         }
         // Focus first input on mount
         if (inputRefs.current[0]) inputRefs.current[0].focus();
@@ -29,27 +30,23 @@ const OTPVerification = () => {
     // Handle digit input
     const handleChange = (e, index) => {
         const value = e.target.value;
-        if (!/^\d*$/.test(value)) return; // Only allow numbers
+        if (!/^\d*$/.test(value)) return; 
 
         const newOtp = [...otp];
-        // Take only the last character if user types over
         newOtp[index] = value.substring(value.length - 1);
         setOtp(newOtp);
 
-        // Move to next input if value is entered
         if (value && index < 5) {
             inputRefs.current[index + 1].focus();
         }
     };
 
-    // Handle Backspace
     const handleKeyDown = (e, index) => {
         if (e.key === 'Backspace' && !otp[index] && index > 0) {
             inputRefs.current[index - 1].focus();
         }
     };
 
-    // Handle Paste
     const handlePaste = (e) => {
         e.preventDefault();
         const data = e.clipboardData.getData('text').trim();
@@ -88,7 +85,13 @@ const OTPVerification = () => {
             sessionStorage.removeItem('tempPassword');
             sessionStorage.removeItem('tempRole');
             localStorage.setItem('user', JSON.stringify(data.user));
-            navigate('/admin/overview');
+            
+            // Route based on role
+            if (data.user.role === 'Admin') {
+                navigate('/admin/overview');
+            } else {
+                navigate('/validator/overview');
+            }
 
         } catch (error) {
             setMessage({ text: error.message, type: 'error' });
@@ -133,35 +136,116 @@ const OTPVerification = () => {
     };
 
     return (
-        <div className="signup-body-wrapper">
+        <div className="otp-body">
+            <style>{`
+                .otp-body {
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(135deg, #dce9f8 0%, #eff6ff 100%);
+                    width: 100vw;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    z-index: 9999;
+                }
+                .signup-page-container {
+                    display: flex;
+                    width: 900px;
+                    max-width: 95%;
+                    min-height: 550px;
+                    background-color: #fff;
+                    border-radius: 12px;
+                    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+                    overflow: hidden;
+                }
+                .signup-info-panel {
+                    flex: 1;
+                    background-color: #34495E;
+                    color: white;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 40px;
+                    text-align: center;
+                }
+                .signup-logo img { height: 80px; margin-bottom: 15px; }
+                .signup-info-panel h1 { font-size: 1.8rem; margin-bottom: 5px; font-weight: 700; }
+                .signup-info-panel h2 { font-size: 1.4rem; margin-bottom: 15px; font-weight: 600; }
+                .signup-subtitle { font-size: 0.95rem; opacity: 0.9; line-height: 1.5; }
+                .signup-form-panel {
+                    flex: 1.3;
+                    background-color: white;
+                    padding: 50px 60px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                }
+                .signup-form-panel h3 { font-size: 1.6rem; color: #1f2937; text-align: center; margin-bottom: 10px; }
+                .card-desc { text-align: center; color: #6b7280; font-size: 0.95rem; margin-bottom: 30px; }
+                .otp-input-group { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 25px; }
+                .otp-input-group input {
+                    width: 100%;
+                    height: 55px;
+                    border: 1px solid #d1d5db;
+                    border-radius: 8px;
+                    text-align: center;
+                    font-size: 1.5rem;
+                    font-weight: 600;
+                    background-color: #f9fafb;
+                }
+                .otp-btn-primary {
+                    background-color: #34495e;
+                    color: white;
+                    border: none;
+                    padding: 14px;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    width: 100%;
+                }
+                .otp-btn-outline {
+                    background-color: white;
+                    color: #374151;
+                    border: 1px solid #d1d5db;
+                    padding: 14px;
+                    font-size: 1rem;
+                    font-weight: 600;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    width: 100%;
+                    text-align: center;
+                    text-decoration: none;
+                    margin-top: 10px;
+                }
+                .resend-link { text-align: center; font-size: 0.9rem; color: #6b7280; margin-bottom: 20px; }
+                .resend-button { background: none; border: none; color: #34495e; font-weight: 600; cursor: pointer; text-decoration: underline; }
+                @media (max-width: 768px) {
+                    .signup-page-container { flex-direction: column; }
+                }
+            `}</style>
             <div className="signup-page-container">
-                {/* Left Panel */}
                 <div className="signup-info-panel">
                     <div className="signup-logo">
-                        <img src="bright-logo-v3.png" alt="BRIGHT Logo" />
-                        <h1 className="logo-text">BRIGHT</h1>
+                        <img src="/src/assets/bright-logo-v3.png" alt="BRIGHT Logo" />
+                        <h1>BRIGHT</h1>
                     </div>
                     <div className="login-info">
                         <h2>Staff Access Portal</h2>
-                        <p className="signup-subtitle">
-                            Budget Record Integrity using Generalized Hash-based Transparency
-                        </p>
+                        <p className="signup-subtitle">Budget Record Integrity using Generalized Hash-based Transparency</p>
                     </div>
                 </div>
 
-                {/* Right Panel */}
                 <div className="signup-form-panel">
                     <h3>Verify with OTP</h3>
-                    <p className="card-desc">
-                        To ensure your security, please enter the One-Time Password (OTP) sent to your registered email.
-                    </p>
+                    <p className="card-desc">To ensure your security, please enter the One-Time Password (OTP) sent to your registered email.</p>
 
                     <form onSubmit={handleSubmit}>
                         {message.text && (
-                            <div 
-                                className="otp-message" 
-                                style={{ color: message.type === 'error' ? '#e74c3c' : '#27ae60' }}
-                            >
+                            <div style={{ textAlign: 'center', color: message.type === 'error' ? '#e74c3c' : '#27ae60', fontWeight: 'bold', marginBottom: '20px' }}>
                                 {message.text}
                             </div>
                         )}
@@ -185,12 +269,7 @@ const OTPVerification = () => {
 
                         <div className="resend-link">
                             Didn't receive the OTP?{' '}
-                            <button 
-                                type="button" 
-                                onClick={handleResend} 
-                                disabled={isResending}
-                                className="resend-button"
-                            >
+                            <button type="button" onClick={handleResend} disabled={isResending} className="resend-button">
                                 {isResending ? 'Resending...' : 'Resend'}
                             </button>
                         </div>
@@ -199,11 +278,7 @@ const OTPVerification = () => {
                             <button type="submit" className="otp-btn-primary" disabled={isSubmitting}>
                                 {isSubmitting ? 'Verifying...' : 'Submit'}
                             </button>
-                            <button 
-                                type="button" 
-                                className="otp-btn-outline" 
-                                onClick={() => navigate('/login')}
-                            >
+                            <button type="button" className="otp-btn-outline" onClick={() => navigate('/auth/login')}>
                                 Cancel
                             </button>
                         </div>

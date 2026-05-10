@@ -38,15 +38,61 @@ const AdminLayout = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Logout Handler
   const handleLogout = (e) => {
-    e.preventDefault();
-    localStorage.removeItem('user');
-    setIsUserDropdownOpen(false);
-    navigate('/auth/login'); 
+    if (e) e.preventDefault(); // Prevents page reload if called from a link
+    localStorage.removeItem('user'); // Clear session
+    setIsUserDropdownOpen(false); // Close dropdown
+    navigate('/auth/login'); // Redirect to login
+  };
+  // ----------------------
+  // Logout Handler
+  const handleUpdateAccount = async () => {
+    try {
+      // Fetch logic...
+      console.log("Updating user:", user);
+      
+      // Update local storage so changes persist
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      alert('Account updated successfully!');
+      setActiveModal(null); // Close modal
+    } catch (error) {
+      console.error("Update failed:", error);
+    }
   };
 
   const closeModal = () => setActiveModal(null);
+
+  const handleUpdatePassword = async (e) => {
+  e.preventDefault();
+  
+  const currentPassword = e.target['current-password'].value;
+  const newPassword = e.target['new-password'].value;
+  const confirmPassword = e.target['confirm-new-password'].value;
+
+  if (newPassword !== confirmPassword) {
+    alert("New passwords do not match!");
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/user/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+
+    if (response.ok) {
+      alert("Password updated successfully!");
+      closeModal();
+    } else {
+      const errorData = await response.json();
+      alert(errorData.message || "Failed to update password.");
+    }
+  } catch (error) {
+    console.error("Error updating password:", error);
+  }
+};
 
   return (
     <div className="admin-layout-wrapper">
@@ -143,20 +189,46 @@ const AdminLayout = () => {
             <button className="close-btn" onClick={closeModal}>&times;</button>
           </div>
           <div className="modal-body">
+            {/* Full Name */}
             <div className="form-group">
               <label className="input-label">Full Name</label>
-              <input type="text" className="modal-input" value={user.name} readOnly />
-              <p className="field-hint">Your name as it appears in the system</p>
+              <input 
+                type="text" 
+                className="modal-input" 
+                value={user.name || ''} 
+                onChange={(e) => setUser({ ...user, name: e.target.value })} 
+              />
             </div>
-            <div className="form-group">
+
+            {/* NEW: Username Field */}
+            <div className="form-group" style={{ marginTop: '15px' }}>
+              <label className="input-label">Username</label>
+              <input 
+                type="text" 
+                className="modal-input" 
+                value={user.username || ''} 
+                onChange={(e) => setUser({ ...user, username: e.target.value })} 
+                placeholder="Enter username"
+              />
+              <p className="field-hint">This is used for logging into the BRIGHT system</p>
+            </div>
+
+            {/* Role (Read Only) */}
+            <div className="form-group" style={{ marginTop: '15px' }}>
               <label className="input-label">Role</label>
-              <input type="text" className="modal-input read-only" value={user.role} readOnly />
-              <p className="field-hint">Your assigned administrative role</p>
+              <input type="text" className="modal-input read-only" value={user.role} readOnly style={{ backgroundColor: '#f1f5f9', cursor: 'not-allowed' }} />
+              <p className="field-hint">Your assigned administrative role cannot be changed here</p>
             </div>
           </div>
           <div className="modal-footer">
-            <button className="btn-secondary" onClick={closeModal} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Close</button>
-            <button className="btn-primary" style={{ background: '#0f172a', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Save Changes</button>
+            <button className="btn-secondary" onClick={closeModal} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginRight: '8px' }}>Close</button>
+            <button 
+              className="btn-primary" 
+              onClick={handleUpdateAccount}
+              style={{ background: '#0f172a', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}
+            >
+              Save Changes
+            </button>
           </div>
         </div>
       </div>
@@ -167,55 +239,86 @@ const AdminLayout = () => {
           <div className="modal-header">
             <div>
               <h3>Change Password</h3>
-              <p className="sub-text">Secure your account with a new password</p>
+              <p className="sub-text">Ensure your password is strong and secure</p>
             </div>
             <button className="close-btn" onClick={closeModal}>&times;</button>
           </div>
-          <div className="modal-body">
-            <div className="form-group">
+          
+          <form onSubmit={handleUpdatePassword}>
+            <div className="modal-body">
+              {/* Current Password */}
               <label className="input-label">Current Password</label>
-              <div className="password-wrapper">
+              <div className="password-wrapper" style={{ position: 'relative' }}>
                 <input 
                   type={showCurrentPass ? "text" : "password"} 
+                  id="current-password" 
                   className="modal-input" 
-                  placeholder="Enter current password" 
+                  placeholder="Your current password" 
+                  style={{ paddingRight: '40px' }} 
+                  required 
                 />
-                <span className="eye-icon" onClick={() => setShowCurrentPass(!showCurrentPass)}>
-                  {showCurrentPass ? '👁️' : '👁️‍🗨️'}
-                </span>
+                <svg 
+                  onClick={() => setShowCurrentPass(!showCurrentPass)}
+                  className="eye-icon" 
+                  width="18" height="18" viewBox="0 0 24 24" fill="none" 
+                  style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: showCurrentPass ? '#0f172a' : '#6B7280' }}
+                >
+                  <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.2"/>
+                </svg>
               </div>
-            </div>
-            <div className="form-group">
-              <label className="input-label">New Password</label>
-              <div className="password-wrapper">
+
+              {/* New Password */}
+              <label className="input-label" style={{ marginTop: '15px', display: 'block' }}>New Password</label>
+              <div className="password-wrapper" style={{ position: 'relative' }}>
                 <input 
                   type={showNewPass ? "text" : "password"} 
+                  id="new-password" 
                   className="modal-input" 
-                  placeholder="Enter new password" 
+                  placeholder="Minimum 8 characters" 
+                  style={{ paddingRight: '40px' }} 
+                  required 
                 />
-                <span className="eye-icon" onClick={() => setShowNewPass(!showNewPass)}>
-                  {showNewPass ? '👁️' : '👁️‍🗨️'}
-                </span>
+                <svg 
+                  onClick={() => setShowNewPass(!showNewPass)}
+                  className="eye-icon" 
+                  width="18" height="18" viewBox="0 0 24 24" fill="none" 
+                  style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: showNewPass ? '#0f172a' : '#6B7280' }}
+                >
+                  <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.2"/>
+                </svg>
               </div>
-            </div>
-            <div className="form-group">
-              <label className="input-label">Confirm New Password</label>
-              <div className="password-wrapper">
+              <p className="field-hint">Must be at least 8 characters long</p>
+
+              {/* Confirm New Password */}
+              <label className="input-label" style={{ marginTop: '15px', display: 'block' }}>Confirm New Password</label>
+              <div className="password-wrapper" style={{ position: 'relative' }}>
                 <input 
                   type={showConfirmPass ? "text" : "password"} 
+                  id="confirm-new-password" 
                   className="modal-input" 
-                  placeholder="Confirm new password" 
+                  placeholder="Repeat new password" 
+                  style={{ paddingRight: '40px' }} 
+                  required 
                 />
-                <span className="eye-icon" onClick={() => setShowConfirmPass(!showConfirmPass)}>
-                  {showConfirmPass ? '👁️' : '👁️‍🗨️'}
-                </span>
+                <svg 
+                  onClick={() => setShowConfirmPass(!showConfirmPass)}
+                  className="eye-icon" 
+                  width="18" height="18" viewBox="0 0 24 24" fill="none" 
+                  style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: showConfirmPass ? '#0f172a' : '#6B7280' }}
+                >
+                  <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.2"/>
+                </svg>
               </div>
             </div>
-          </div>
-          <div className="modal-footer">
-            <button className="btn-secondary" onClick={closeModal} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
-            <button className="btn-primary" style={{ background: '#0f172a', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Update Password</button>
-          </div>
+            
+            <div className="modal-footer">
+              <button type="button" className="btn-cancel" onClick={closeModal} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginRight: '8px' }}>Cancel</button>
+              <button type="submit" className="btn-save" style={{ background: '#0f172a', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Update Password</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

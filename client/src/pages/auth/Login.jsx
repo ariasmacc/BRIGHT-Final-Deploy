@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; 
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom'; 
 import '../../index.css'; 
+import OTPVerification from './OTPVerification'; 
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('Admin');
@@ -12,24 +15,28 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   
+  // Extract userId from URL if it exists
+  const query = new URLSearchParams(location.search);
+  const userIdFromUrl = query.get('userId');
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [modalSuccess, setModalSuccess] = useState('');
-const handleLoginSubmit = async (e) => {
+
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg(''); 
     
     try {
-        // 1. Send the actual request to your backend
         const response = await fetch('http://localhost:3000/api/users/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            credentials: 'include', // CRITICAL: This tells the browser to accept the cookie!
+            credentials: 'include',
             body: JSON.stringify({ 
-                username: username, // Make sure this matches what your backend expects
+                username: username,
                 password: password,
                 role: role
             })
@@ -37,16 +44,25 @@ const handleLoginSubmit = async (e) => {
 
         const data = await response.json();
 
-        // 2. Check if the backend said "OK"
         if (response.ok) {
-            // The browser now has the secure cookie. Route them to the dashboard.
-            if (role === 'Admin') {
-                navigate('/admin/overview'); 
+            if (data.requires2FA) {
+                // Store temporary info for resend logic
+                sessionStorage.setItem('tempUsername', username);
+                sessionStorage.setItem('tempPassword', password);
+                sessionStorage.setItem('tempRole', role);
+                
+                // Navigate to the same page but with the userId in the query string
+                // This triggers a re-render and allows OTPVerification to pick up the ID
+                navigate(`/auth/login?userId=${data.userId}`, { replace: true });
             } else {
-                navigate('/admin/validation'); 
+                localStorage.setItem('user', JSON.stringify(data.user));
+                if (role === 'Admin') {
+                    navigate('/admin/overview'); 
+                } else {
+                    navigate('/validator/overview');
+                }
             }
         } else {
-            // Show the error message from the backend (e.g., "User not found")
             setErrorMsg(data.error || data.msg || 'Invalid credentials. Please try again.');
         }
 
@@ -56,14 +72,19 @@ const handleLoginSubmit = async (e) => {
     } finally {
         setIsLoading(false);
     }
-};
+  };
+
+  // IF userId is present in the URL, show OTPVerification
+  if (userIdFromUrl) {
+    return <OTPVerification />;
+  }
+
   return (
     <div className="signup-body" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div className="signup-page-container">
 
         <div className="signup-info-panel">
           <div className="signup-logo">
-            {/* FIX: Use Link to go back to welcome screen */}
             <Link to="/welcome" style={{ display: 'block', lineHeight: 0 }}>   
               <img src="/src/assets/bright-logo-v3.png" alt="BRIGHT Logo" style={{ height: '80px', width: 'auto', display: 'block' }} /> 
             </Link> 
@@ -76,7 +97,6 @@ const handleLoginSubmit = async (e) => {
         </div>
 
         <div className="signup-form-panel">
-          {/* FIX: Use Link for the exit button to avoid white screens */}
           <Link to="/welcome" className="exit-button">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
