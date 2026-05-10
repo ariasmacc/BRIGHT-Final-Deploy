@@ -4,6 +4,7 @@ const Validation = require('../models/Validation');
 exports.getValidationQueue = (req, res) => {
   Validation.getQueue((err, rows) => {
     if (err) {
+      console.log(`DEBUG: Submitting validation for User ID: ${validatorUserId}`);
       console.error("Error in validationController.getValidationQueue calling model:", err.message);
       return res.status(500).json({ error: err.message });
     }
@@ -32,6 +33,12 @@ exports.submitDecision = (req, res) => {
 
   // DITO ANG PAG-AYOS: Kunin ang user ID mula sa token
   const validatorUserId = req.user.userId;
+
+  // --- ADD THIS LOG HERE ---
+  console.log("------------------------------------------");
+  console.log(`DEBUG: Validation attempt for Item: ${itemId}`);
+  console.log(`DEBUG: Validator User ID from Token: ${validatorUserId}`);
+  console.log("------------------------------------------");
 
   // 3. Basic validation ng input
   if (!itemId || !itemType || !decision || !comments) {

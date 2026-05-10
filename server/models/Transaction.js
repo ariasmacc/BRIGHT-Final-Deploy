@@ -41,7 +41,7 @@ const buildLedgerQuery = () => {
         'Expense' AS type,
         name AS name_or_vendor,
         created_at AS timestamp, -- This fixes the date sorting
-        submitted_by_used_id AS submitted_by_user_id,
+        submitted_by_user_id,
         category_id,
         amount,
         status,

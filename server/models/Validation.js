@@ -35,7 +35,7 @@ const Validation = {
           'Normal' AS priority,
           (SELECT COUNT(*) FROM Validations v WHERE v.item_id = e.expense_id AND v.item_type = 'expense' AND v.decision = 'Approved') AS validations
         FROM Expenses e
-        LEFT JOIN Users u ON e.submitted_by_used_id = u.user_id -- <-- FIXED: Changed 'user' to 'used'
+        LEFT JOIN Users u ON e.submitted_by_user_id = u.user_id -- <-- FIXED: Changed 'user' to 'used'
         LEFT JOIN Categories c ON e.category_id = c.category_id
         WHERE e.status = 'Pending'
       ) AS item

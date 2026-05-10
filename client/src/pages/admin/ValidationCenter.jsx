@@ -70,16 +70,54 @@ const ValidationCenter = () => {
   };
 
   const submitDecision = async (decision) => {
+    // 1. Check if comments are provided
     if (!comments.trim()) {
       alert('Please provide validation comments.');
       return;
     }
-    
-    // Dito ilalagay ang actual fetch logic para sa submitDecision balang araw
-    alert(`Item ${decision.toLowerCase()} successfully!`);
-    closeValidationPopup();
-    loadQueue(); // Refresh the list
-    loadSummary();
+
+    // 2. Safety check to ensure an item is selected
+    if (!selectedItem) {
+      alert('Error: No item selected for validation.');
+      return;
+    }
+
+    // 3. Prepare the exact payload your backend expects
+    const payload = {
+      itemId: selectedItem.id,
+      itemType: selectedItem.type,
+      decision: decision,
+      comments: comments
+    };
+
+    try {
+      // 4. Send the POST request to the correct endpoint
+      const res = await fetch(`${API_BASE_URL}/validation/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include', // Your VIP pass for auth.js
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      // 5. Check for backend errors (like the "Already validated" check)
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to submit validation decision.');
+      }
+
+      // 6. Success handling
+      alert(`Item ${decision.toLowerCase()} successfully!`);
+      closeValidationPopup();
+      loadQueue(); // Refresh the table list
+      loadSummary(); // Refresh the top cards
+      
+    } catch (err) {
+      console.error("Validation submission error:", err);
+      alert(`Error: ${err.message}`);
+    }
   };
 
   // ==========================================

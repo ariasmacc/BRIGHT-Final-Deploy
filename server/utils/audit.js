@@ -46,7 +46,7 @@ const sql = `
         amount, 
         description,
         NULL as business_justification, -- Wala nito ang Expense
-        submitted_by_used_id AS submitted_by_user_id,
+        submitted_by_user_id,
         NULL as priority, -- Wala nito ang Expense
         budget_allocation_id,
         expense_date,

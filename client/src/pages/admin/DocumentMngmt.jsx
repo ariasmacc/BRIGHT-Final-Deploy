@@ -1,37 +1,35 @@
 import React, { useState, useEffect } from 'react';
 
 const DocumentMngmt = () => {
+  // 1. Point this to your Backend Port
+  const BACKEND_URL = 'http://localhost:3000';
   const API_BASE_URL = '/api';
+  
   const [allDocuments, setAllDocuments] = useState([]);
   const [filteredDocuments, setFilteredDocuments] = useState([]);
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [user, setUser] = useState(null);
 
-  //  Initial Load & Auth Check
-useEffect(() => {
+  useEffect(() => {
     const userString = localStorage.getItem('user');
     if (userString) {
       setUser(JSON.parse(userString));
     } else {
       setUser({ name: 'Admin', role: 'Admin' }); 
     }
-
     loadDocuments();
   }, []);
 
-  // Data Fetching
   const loadDocuments = async () => {
     try {
-      // FIX: Added the config object with credentials: 'include'
-      const res = await fetch(`http://localhost:3000${API_BASE_URL}/documents`, {
+      const res = await fetch(`${BACKEND_URL}${API_BASE_URL}/documents`, {
         credentials: 'include'
       });
       
       if (!res.ok) throw new Error('Failed to fetch documents');
       const data = await res.json();
       
-      // Safety check: ensure data is an array
       const documentsArray = Array.isArray(data) ? data : [];
       setAllDocuments(documentsArray);
       setFilteredDocuments(documentsArray);
@@ -42,7 +40,6 @@ useEffect(() => {
     }
   };
 
-  // 3. Filtering Logic
   useEffect(() => {
     const filtered = allDocuments.filter((doc) => {
       const docText = (
@@ -59,22 +56,26 @@ useEffect(() => {
     setFilteredDocuments(filtered);
   }, [searchTerm, activeFilter, allDocuments]);
 
-  // Action Handlers
+  // ==========================================
+  // FIXED ACTION HANDLER
+  // ==========================================
   const handleAction = (action, doc) => {
-    const urlPath = doc.file_path.replace('uploads', '');
+    const BACKEND_URL = 'http://localhost:3000';
+    
     if (action === 'view') {
-      window.open(urlPath, '_blank');
+      // Keep "View" pointing to the static folder to open in a new tab
+      const viewUrl = `${BACKEND_URL}${doc.file_path}`;
+      window.open(viewUrl, '_blank');
     } else if (action === 'download') {
-      const a = document.createElement('a');
-      a.href = urlPath;
-      a.download = doc.file_name;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      // Point "Download" to our new API endpoint
+      // We use the actual filename from the DB (e.g., file-123.png)
+      const downloadUrl = `${BACKEND_URL}/api/documents/download/${doc.file_name}`;
+      
+      // We open this in a hidden way or just use window.location
+      window.location.href = downloadUrl;
     }
   };
 
-  // Summary Calculations
   const summary = {
     total: allDocuments.length,
     verified: allDocuments.filter(d => d.status === 'Approved' || d.status === 'Verified').length,
@@ -86,6 +87,7 @@ useEffect(() => {
 
   return (
     <main className="document-management">
+      {/* ... (Your Header and Summary Cards JSX remains the same) ... */}
       <div className="document-managemant-box">
         <div className="header-row">
           <div>
@@ -97,19 +99,19 @@ useEffect(() => {
         <div className="docs-grid">
           <div className="docs-card">
             <h4>Total Documents</h4>
-            <p className="docs-number" id="doc-total">{summary.total}</p>
+            <p className="docs-number">{summary.total}</p>
           </div>
           <div className="docs-card">
             <h4>Verified</h4>
-            <p className="docs-number verified" id="doc-verified">{summary.verified}</p>
+            <p className="docs-number verified">{summary.verified}</p>
           </div>
           <div className="docs-card">
             <h4>Pending Review</h4>
-            <p className="docs-number pending" id="doc-pending">{summary.pending}</p>
+            <p className="docs-number pending">{summary.pending}</p>
           </div>
           <div className="docs-card">
             <h4>Storage Used</h4>
-            <p className="docs-number" id="doc-storage">{summary.storage} MB</p>
+            <p className="docs-number">{summary.storage} MB</p>
           </div>
           <div className="docs-card">
             <h4>Security</h4>
@@ -120,25 +122,17 @@ useEffect(() => {
 
       <div className="document-repo card">
         <h3>Document Repository</h3>
-        <p className="subtitle">Secure document storage with cryptographic verification</p>
-
         <div className="search-bar">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-            stroke="#7f8c8d" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-            className="search-icon">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
           <input 
             type="text" 
-            placeholder="Search documents by name, description, or transaction ID..." 
+            placeholder="Search documents..." 
             className="search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
-        <div className="filter-tabs" id="doc-filter-tabs">
+        <div className="filter-tabs">
           {filterOptions.map(option => {
             const key = option === 'All' ? 'all' : option;
             const count = option === 'All' 
@@ -161,28 +155,20 @@ useEffect(() => {
           <table>
             <thead>
               <tr>
-                <th>Document</th>
-                <th>Type</th>
-                <th>Size</th>
-                <th>Related Transaction</th>
-                <th>Category</th>
-                <th>Uploaded By</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Hash</th>
-                <th>Actions</th>
+                <th>Document</th><th>Type</th><th>Size</th><th>Related Transaction</th>
+                <th>Category</th><th>Uploaded By</th><th>Date</th><th>Status</th>
+                <th>Hash</th><th>Actions</th>
               </tr>
             </thead>
-            <tbody id="document-table-body">
+            <tbody>
               {filteredDocuments.length > 0 ? (
                 filteredDocuments.map((doc, index) => (
                   <tr key={index}>
-                    <td className="document-cell" title={doc.description || ''}>
-                      <strong>{doc.file_name}</strong><br />
-                      <small className="document-description">{doc.description || 'No description'}</small>
+                    <td className="document-cell">
+                      <strong>{doc.file_name}</strong>
                     </td>
                     <td><span className="tag">{doc.type}</span></td>
-                    <td>{doc.size.toFixed(2)} KB</td>
+                    <td>{doc.size?.toFixed(2)} KB</td>
                     <td>{doc.related_transaction}</td>
                     <td>{doc.category || 'N/A'}</td>
                     <td>{doc.uploaded_by}</td>
@@ -192,8 +178,8 @@ useEffect(() => {
                         {doc.status}
                       </span>
                     </td>
-                    <td className="hash" title={doc.hash}>
-                      {doc.hash ? `${doc.hash.substring(0, 15)}...` : 'N/A'}
+                    <td className="hash">
+                      {doc.hash ? `${doc.hash.substring(0, 10)}...` : 'N/A'}
                     </td>
                     <td>
                       <button className="btn" onClick={() => handleAction('view', doc)}>View</button>
