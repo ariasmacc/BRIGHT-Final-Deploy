@@ -8,6 +8,7 @@ import ValidatorLayout from './components/layout/ValidatorLayout';
 // Auth & Public Pages
 import Login from './pages/auth/login'; 
 import Signup from './pages/auth/signup';
+import OTPVerification from './pages/auth/OTPVerification';
 import Welcome from './pages/Public/Welcome';
 import Overview from './pages/Public/PublicOverview';
 import Ledger from './pages/Public/PublicTL';
@@ -30,6 +31,7 @@ function App() {
         <Route path="/welcome" element={<Welcome />} />
         <Route path="/auth/login" element={<Login />} />
         <Route path="/auth/signup" element={<Signup />} />
+        <Route path="/auth/verify-otp" element={<OTPVerification />} />
         
         {/* 2. ADMIN ROUTES */}
         <Route path="/admin" element={<AdminLayout />}>
