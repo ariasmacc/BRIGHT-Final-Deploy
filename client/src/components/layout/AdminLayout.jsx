@@ -1,23 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import brightLogo from '../../assets/bright-logo-v3.png';
-import Footer from '../../components/layout/Footer'; 
-
+import Footer from '../../components/layout/Footer';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   
-  // State for UI Toggles
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [activeModal, setActiveModal] = useState(null); 
   const [user, setUser] = useState({ name: 'User', role: 'Staff' });
-
-  // Password Visibility States
+  
+  const dropdownRef = useRef(null);
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
 
-  // Sync with LocalStorage for User Info
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
@@ -29,10 +26,24 @@ const AdminLayout = () => {
     }
   }, []);
 
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsUserDropdownOpen(false); 
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Logout Handler
   const handleLogout = (e) => {
     e.preventDefault();
     localStorage.removeItem('user');
-    navigate('/login');
+    setIsUserDropdownOpen(false);
+    navigate('/auth/login'); 
   };
 
   const closeModal = () => setActiveModal(null);
@@ -42,14 +53,14 @@ const AdminLayout = () => {
       {/* --- HEADER --- */}
       <header className="header">
         <div className="logo" id="header-logo">
-          <NavLink to="/admin/AdminOverview" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', color: 'inherit' }}>
+          <NavLink to="/admin/overview" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', color: 'inherit' }}>
             <img src={brightLogo} alt="BRIGHT" />
             <h1 style={{ margin: 0, fontSize: '1.5em', color: 'white' }}>BRIGHT</h1>
           </NavLink>
           <div className="staff-portal">Staff Portal</div>
         </div>
 
-        <div className="user-section">
+        <div className="user-section" ref={dropdownRef}>
           <div className="role">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shield-icon" style={{ width: '18px', marginRight: '5px' }}>
               <path d="M12 2l7 4v6c0 5-3.58 9.74-7 10-3.42-.26-7-5-7-10V6l7-4z" />
@@ -68,8 +79,8 @@ const AdminLayout = () => {
 
           {/* User Profile Dropdown */}
           {isUserDropdownOpen && (
-            <div className="dropdown-menu" id="userDropdown" style={{ display: 'block' }}>
-              <div className="dropdown-header">My Account</div>
+            <div className={`dropdown-menu ${isUserDropdownOpen ? 'show' : ''}`} id="userDropdown">
+              <div className="dropdown-header" onClick={() => setIsUserDropdownOpen(false)} style={{ cursor: 'pointer' }}>My Account</div>
               <button className="dropdown-item" onClick={() => {setActiveModal('accountSettingsModal'); setIsUserDropdownOpen(false);}}>
                 Account Settings
               </button>
@@ -107,7 +118,94 @@ const AdminLayout = () => {
         <Outlet />
       </main>
 
-        <Footer />
+      <Footer />
+
+      {/* --- ACCOUNT SETTINGS MODAL --- */}
+      <div className={`modal-overlay ${activeModal === 'accountSettingsModal' ? 'active' : ''}`} onClick={closeModal}>
+        <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <div>
+              <h3>Account Settings</h3>
+              <p className="sub-text">Update your profile information</p>
+            </div>
+            <button className="close-btn" onClick={closeModal}>&times;</button>
+          </div>
+          <div className="modal-body">
+            <div className="form-group">
+              <label className="input-label">Full Name</label>
+              <input type="text" className="modal-input" value={user.name} readOnly />
+              <p className="field-hint">Your name as it appears in the system</p>
+            </div>
+            <div className="form-group">
+              <label className="input-label">Role</label>
+              <input type="text" className="modal-input read-only" value={user.role} readOnly />
+              <p className="field-hint">Your assigned administrative role</p>
+            </div>
+          </div>
+          <div className="modal-footer">
+            <button className="btn-secondary" onClick={closeModal} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Close</button>
+            <button className="btn-primary" style={{ background: '#0f172a', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Save Changes</button>
+          </div>
+        </div>
+      </div>
+
+      {/* --- CHANGE PASSWORD MODAL --- */}
+      <div className={`modal-overlay ${activeModal === 'changePasswordModal' ? 'active' : ''}`} onClick={closeModal}>
+        <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <div>
+              <h3>Change Password</h3>
+              <p className="sub-text">Secure your account with a new password</p>
+            </div>
+            <button className="close-btn" onClick={closeModal}>&times;</button>
+          </div>
+          <div className="modal-body">
+            <div className="form-group">
+              <label className="input-label">Current Password</label>
+              <div className="password-wrapper">
+                <input 
+                  type={showCurrentPass ? "text" : "password"} 
+                  className="modal-input" 
+                  placeholder="Enter current password" 
+                />
+                <span className="eye-icon" onClick={() => setShowCurrentPass(!showCurrentPass)}>
+                  {showCurrentPass ? '👁️' : '👁️‍🗨️'}
+                </span>
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="input-label">New Password</label>
+              <div className="password-wrapper">
+                <input 
+                  type={showNewPass ? "text" : "password"} 
+                  className="modal-input" 
+                  placeholder="Enter new password" 
+                />
+                <span className="eye-icon" onClick={() => setShowNewPass(!showNewPass)}>
+                  {showNewPass ? '👁️' : '👁️‍🗨️'}
+                </span>
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="input-label">Confirm New Password</label>
+              <div className="password-wrapper">
+                <input 
+                  type={showConfirmPass ? "text" : "password"} 
+                  className="modal-input" 
+                  placeholder="Confirm new password" 
+                />
+                <span className="eye-icon" onClick={() => setShowConfirmPass(!showConfirmPass)}>
+                  {showConfirmPass ? '👁️' : '👁️‍🗨️'}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="modal-footer">
+            <button className="btn-secondary" onClick={closeModal} style={{ background: '#6c757d', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
+            <button className="btn-primary" style={{ background: '#0f172a', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Update Password</button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

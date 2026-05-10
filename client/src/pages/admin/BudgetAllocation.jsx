@@ -1,25 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
 const BudgetAllocation = () => {
-  // --- State Hooks ---
   const [allocations, setAllocations] = useState([]);
   const [summary, setSummary] = useState({ totalBudget: 0, pendingCount: 0, approvedToday: 0, totalAllocations: 0 });
   const [loading, setLoading] = useState(true);
   const [selectedBudget, setSelectedBudget] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // --- API Base URL ---
   const API_BASE_URL = '/api';
 
-  // --- Data Fetching ---
   const loadAllocations = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/budget/allocations`);
+      const res = await fetch(`http://localhost:3000${API_BASE_URL}/budget/allocations`);
       const data = await res.json();
-
-  // Log the data to see what the server is actually sending back    
-      console.log("Fetched Allocations:", data);
-      
       setAllocations(data || []);
     } catch (err) {
       console.error('Error loading allocations:', err);
@@ -30,7 +23,7 @@ const BudgetAllocation = () => {
 
   const loadSummary = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/budget/summary`);
+      const res = await fetch(`http://localhost:3000${API_BASE_URL}/budget/summary`);
       const data = await res.json();
       setSummary({
         totalBudget: data.totalBudget || 0,
@@ -48,14 +41,11 @@ const BudgetAllocation = () => {
     loadSummary();
   }, []);
 
-  // --- Handlers ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-
-    // --- STEP 1: DEFINE THE VARIABLE ---
     const storedUser = JSON.parse(localStorage.getItem('user'));
-    const activeUserId = storedUser?.user_id || 1; // Default to 1 if not found, but ideally should handle this case better
+    const activeUserId = storedUser?.user_id || 1; 
 
     const data = {
       name: formData.get('budgetname'),
@@ -64,15 +54,11 @@ const BudgetAllocation = () => {
       priority: formData.get('priority'),
       description: formData.get('description'),
       businessJustification: formData.get('businessjustification'),
-      // Added user ID from localStorage (assuming user info is stored there after login)
       submitted_by_user_id: activeUserId
     };
 
-     // --- PUT THE LOG HERE ---
-    console.log("Submitting with User ID:", activeUserId); 
-
     try {
-      const res = await fetch(`${API_BASE_URL}/budget/allocations`, {
+      const res = await fetch(`http://localhost:3000${API_BASE_URL}/budget/allocations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -89,9 +75,9 @@ const BudgetAllocation = () => {
 
   const handleViewDetails = async (id) => {
     setIsModalOpen(true);
-    setSelectedBudget(null); // Show loading state in modal
+    setSelectedBudget(null); 
     try {
-      const res = await fetch(`${API_BASE_URL}/budget/allocations/${id}`);
+      const res = await fetch(`http://localhost:3000${API_BASE_URL}/budget/allocations/${id}`);
       const data = await res.json();
       setSelectedBudget(data);
     } catch (err) {
@@ -100,12 +86,34 @@ const BudgetAllocation = () => {
   };
 
   return (
-    <main className="budget-allocation-page" style={{ padding: '20px' }}>
-      <div className="newBudget">
+    <main className="expense-page">
+      <div className="expense-recording-page">
         <h2>Budget Allocation Management</h2>
         <p className="subtitle">Create and manage budget allocations for different categories</p>
+      </div>
 
-        <section className="budget-creation card">
+      {/* SUMMARY CARDS SA TAAS + MAY KULAY */}
+      <section className="summary-cards" style={{ marginBottom: '30px' }}>
+        <div className="over-card">
+          <h3>Total Budget</h3>
+          <p className="amount">₱<span>{summary.totalBudget.toLocaleString()}</span></p>
+        </div>
+        <div className="over-card">
+          <h3>Pending Review</h3>
+          <p className="amount" style={{ color: '#f39c12' }}><span>{summary.pendingCount}</span></p>
+        </div>
+        <div className="over-card">
+          <h3>Approved Today</h3>
+          <p className="amount green"><span>{summary.approvedToday}</span></p>
+        </div>
+        <div className="over-card">
+          <h3>Total Allocations</h3>
+          <p className="amount" style={{ color: '#3498db' }}><span>{summary.totalAllocations}</span></p>
+        </div>
+      </section>
+
+      <div className="expense-recording-page">
+        <section className="expense-recording card" style={{ marginBottom: '30px' }}>
           <div className="form-card">
             <h3>
               <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="none" viewBox="0 0 24 24" style={{ verticalAlign: 'middle', marginRight: '5px' }}>
@@ -115,14 +123,13 @@ const BudgetAllocation = () => {
             </h3>
             <p className="form-sub">Submit a new budget allocation request for validation.</p>
 
-            <form id="budget-allocation-form" className="budget-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="budgetname">Budget Name</label>
-                <input type="text" id="budgetname" name="budgetname" placeholder="Enter Budget Name" required />
-              </div>
-
-              <div className="form-row" style={{ display: 'flex', gap: '15px' }}>
-                <div className="form-group" style={{ flex: 1 }}>
+            <form id="budget-allocation-form" onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label htmlFor="budgetname">Budget Name</label>
+                  <input type="text" id="budgetname" name="budgetname" placeholder="Enter Budget Name" required />
+                </div>
+                <div className="form-group">
                   <label htmlFor="category">Category</label>
                   <select id="category" name="category" defaultValue="" required>
                     <option value="" disabled>Select a category</option>
@@ -134,110 +141,83 @@ const BudgetAllocation = () => {
                     <option value="emergencyfund">Emergency Fund</option>
                   </select>
                 </div>
-
-                <div className="form-group" style={{ flex: 1 }}>
+                <div className="form-group">
                   <label htmlFor="amount">Amount (₱)</label>
                   <input type="number" id="amount" name="amount" placeholder="Enter Amount" step="0.01" min="0" required />
                 </div>
+                <div className="form-group">
+                  <label htmlFor="priority">Priority</label>
+                  <select id="priority" name="priority" defaultValue="Normal" required>
+                    <option value="Normal">Normal</option>
+                    <option value="High">High</option>
+                  </select>
+                </div>
+                <div className="form-group full-width">
+                  <label htmlFor="description">Description</label>
+                  <textarea id="description" name="description" placeholder="Enter Description" required></textarea>
+                </div>
+                <div className="form-group full-width">
+                  <label htmlFor="businessjustification">Business Justification</label>
+                  <textarea id="businessjustification" name="businessjustification" placeholder="Enter Business Justification" required></textarea>
+                </div>
               </div>
-
-              <div className="form-group">
-                <label htmlFor="priority">Priority</label>
-                <select id="priority" name="priority" defaultValue="Normal" required>
-                  <option value="Normal">Normal</option>
-                  <option value="High">High</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="description">Description</label>
-                <textarea id="description" name="description" placeholder="Enter Description" required></textarea>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="businessjustification">Business Justification</label>
-                <textarea id="businessjustification" name="businessjustification" placeholder="Enter Business Justification" required></textarea>
-              </div>
-
-              <button type="submit" className="btn-primary">Create Budget Allocation</button>
+              <button type="submit" className="btn-primary" style={{ marginTop: '15px' }}>Create Budget Allocation</button>
             </form>
           </div>
         </section>
       </div>
 
-      <div className="budgetvalidation-table-section card" style={{ marginTop: '30px' }}>
-        <h2>Budget Allocation</h2>
-        <p className="subtitle">All budget allocations and their validation status</p>
-
-        <div className="tablescroll">
-          <table className="budgetvalidation">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Category</th>
-                <th>Amount</th>
-                <th>Submitted By</th>
-                <th>Date</th>
-                <th>Priority</th>
-                <th>Validations</th>
-                <th>Actions</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan="11">Loading allocations...</td></tr>
-              ) : allocations.length === 0 ? (
-                <tr><td colSpan="11">No allocations found.</td></tr>
-              ) : (
-                allocations.map((b) => (
-                  <tr key={b.id}>
-                    <td>{b.id}</td>
-                    <td>{b.name}</td>
-                    <td>Allocation</td>
-                    <td>{b.category}</td>
-                    <td>₱{parseFloat(b.amount).toLocaleString()}</td>
-                    <td>{b.created_by || '—'}</td>
-                    <td>{new Date(b.date).toLocaleDateString()}</td>
-                    <td>
-                      <span className={`priority ${b.priority?.toLowerCase()}`}>
-                        {b.priority || 'Normal'}
-                      </span>
-                    </td>
-                    <td><span className="validations">{b.validations} / 2</span></td>
-                    <td>
-                      <button className="view-btn" onClick={() => handleViewDetails(b.id)}>View</button>
-                    </td>
-                    <td><span className={`status ${b.status?.toLowerCase()}`}>{b.status}</span></td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      <section className="expense-records card" style={{ padding: '20px' }}>
+        <h2 style={{ fontSize: '18px', color: '#2c3e50', marginBottom: '5px' }}>Budget Allocations Record</h2>
+        <p className="subtitle" style={{ fontSize: '13px', color: '#7f8c8d', marginBottom: '15px' }}>All budget allocations and their validation status</p>
+        
+        <div className="table-container">
+          <div className="tablescroll">
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left', padding: '12px' }}>ID</th>
+                  <th style={{ textAlign: 'left', padding: '12px' }}>Name</th>
+                  <th style={{ textAlign: 'left', padding: '12px' }}>Category</th>
+                  <th style={{ textAlign: 'left', padding: '12px' }}>Amount</th>
+                  <th style={{ textAlign: 'left', padding: '12px' }}>Submitted By</th>
+                  <th style={{ textAlign: 'left', padding: '12px' }}>Date</th>
+                  <th style={{ textAlign: 'center', padding: '12px' }}>Priority</th>
+                  <th style={{ textAlign: 'center', padding: '12px' }}>Validations</th>
+                  <th style={{ textAlign: 'center', padding: '12px' }}>Status</th>
+                  <th style={{ textAlign: 'center', padding: '12px' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan="10" style={{ textAlign: 'center', padding: '20px' }}>Loading allocations...</td></tr>
+                ) : allocations.length === 0 ? (
+                  <tr><td colSpan="10" style={{ textAlign: 'center', padding: '20px' }}>No allocations found.</td></tr>
+                ) : (
+                  allocations.map((b) => (
+                    <tr key={b.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                      <td style={{ padding: '12px' }}>{b.id}</td>
+                      <td style={{ padding: '12px' }}><strong>{b.name}</strong></td>
+                      <td style={{ padding: '12px' }}>{b.category}</td>
+                      <td style={{ padding: '12px' }}>₱{parseFloat(b.amount).toLocaleString()}</td>
+                      <td style={{ padding: '12px' }}>{b.created_by || '—'}</td>
+                      <td style={{ padding: '12px' }}>{new Date(b.date).toLocaleDateString()}</td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
+                        <span className={`priority ${b.priority?.toLowerCase()}`}>{b.priority || 'Normal'}</span>
+                      </td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>{b.validations} / 2</td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}><span className={`status ${b.status?.toLowerCase()}`}>{b.status}</span></td>
+                      <td style={{ padding: '12px', textAlign: 'center' }}>
+                        <button className="view-btn" onClick={() => handleViewDetails(b.id)}>View</button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="summary-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px', marginTop: '20px' }}>
-        <div className="mini-card">
-          <h3>Total Budget</h3>
-          <div className="budgetvalue">₱{summary.totalBudget.toLocaleString()}</div>
-        </div>
-        <div className="mini-card">
-          <h3>Pending Review</h3>
-          <div className="budgetvalue">{summary.pendingCount}</div>
-        </div>
-        <div className="mini-card">
-          <h3>Approved Today</h3>
-          <div className="budgetvalue">{summary.approvedToday}</div>
-        </div>
-        <div className="mini-card">
-          <h3>Total Allocations</h3>
-          <div className="budgetvalue">{summary.totalAllocations}</div>
-        </div>
-      </div>
+      </section>
 
       {/* Detail Modal */}
       {isModalOpen && (
@@ -260,39 +240,6 @@ const BudgetAllocation = () => {
                     <div className="detail-item"><label>Submitted By</label><p>{selectedBudget.submitted_by}</p></div>
                   </div>
                   <div className="detail-item" style={{ marginTop: '10px' }}><label>Description</label><p>{selectedBudget.description}</p></div>
-                </div>
-
-                <div className="detail-section">
-                  <h4>Supporting Documents ({selectedBudget.documents?.length || 0})</h4>
-                  <ul id="budgetDocsList" style={{ border: '1px solid #eee', padding: '10px' }}>
-                    {selectedBudget.documents?.length > 0 ? (
-                      selectedBudget.documents.map((doc, index) => (
-                        <li key={index}>
-                          📎 <a href={doc.file_path?.replace('uploads', '') || '#'} target="_blank" rel="noreferrer">
-                            {doc.file_name}
-                          </a> ({doc.file_type})
-                        </li>
-                      ))
-                    ) : (
-                      <li>No documents attached.</li>
-                    )}
-                  </ul>
-                </div>
-
-                <div className="detail-section">
-                  <h4>Validation History ({selectedBudget.validations_history?.length || 0})</h4>
-                  <ul id="budgetValidationsList" style={{ border: '1px solid #eee', padding: '10px' }}>
-                    {selectedBudget.validations_history?.length > 0 ? (
-                      selectedBudget.validations_history.map((val, index) => (
-                        <li key={index} className={val.decision.toLowerCase()}>
-                          <strong>{val.decision}</strong> by {val.validator_name} on {new Date(val.validated_at).toLocaleString()}
-                          <br /><small><i>{val.comments || 'No comments'}</i></small>
-                        </li>
-                      ))
-                    ) : (
-                      <li>No validation history yet.</li>
-                    )}
-                  </ul>
                 </div>
               </>
             )}

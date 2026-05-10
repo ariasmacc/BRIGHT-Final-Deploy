@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import Footer from '../../components/layout/Footer'; 
 import '../../index.css';
-import AdminLayout from '../../components/layout/AdminLayout';
 
-// 1. CHART.JS IMPORTS (Galing sa PublicOverview)
+// 1. CHART.JS IMPORTS
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -28,9 +27,6 @@ ChartJS.register(
 const AdminOverview = () => {
   const API_BASE_URL = '/api';
 
-  // ==========================================
-  // 1. STATE MANAGEMENT
-  // ==========================================
   const [summary, setSummary] = useState({
     totalBudget: 0,
     totalSpent: 0,
@@ -41,23 +37,16 @@ const AdminOverview = () => {
 
   const [transactions, setTransactions] = useState([]);
   const [utilization, setUtilization] = useState([]);
-  const [trend, setTrend] = useState([]); // DINAGDAG: Para sa Monthly Trend Chart
+  const [trend, setTrend] = useState([]);
 
-  // ==========================================
-  // 2. EFFECT HOOK 
-  // ==========================================
   useEffect(() => {
     loadSummaryData();
     loadRecentTransactions();
     loadDashboardData();
   }, []);
 
-  // ==========================================
-  // 3. FUNCTIONS / API CALLS
-  // ==========================================
   const loadSummaryData = async () => {
     try {
-      // NOTE: Gamitin ang localhost:3000 kapag nagfe-fetch para kumonekta sa backend
       const res = await fetch(`http://localhost:3000${API_BASE_URL}/overview/summary`);
       const data = await res.json();
       const totalBudget = data.totalBudget || 0;
@@ -70,7 +59,6 @@ const AdminOverview = () => {
         percentage: totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(0) : 0,
         pendingCount: data.pendingCount || 0
       });
-      // TINANGGAL YUNG EMPTY setSummary({}) DITO PARA HINDI MABURA ANG DATA
     } catch (err) {
       console.error('Error loading summary data:', err);
     }
@@ -88,7 +76,6 @@ const AdminOverview = () => {
 
   const loadDashboardData = async () => {
     try {
-      // DINAGDAG: Sabay kukunin ang utilization at trend
       const [utilRes, trendRes] = await Promise.all([
         fetch(`http://localhost:3000${API_BASE_URL}/overview/utilization`),
         fetch(`http://localhost:3000${API_BASE_URL}/overview/spending-trend`)
@@ -96,15 +83,11 @@ const AdminOverview = () => {
 
       if (utilRes.ok) setUtilization(await utilRes.json());
       if (trendRes.ok) setTrend(await trendRes.json());
-      // TINANGGAL YUNG EMPTY setUtilization([]) DITO
     } catch (err) {
       console.error('Error loading dashboard data:', err);
     }
   };
 
-  // ==========================================
-  // 4. CHART CONFIGURATIONS
-  // ==========================================
   const categoryChartData = {
     labels: utilization.map(c => c.category),
     datasets: [{
@@ -134,47 +117,37 @@ const AdminOverview = () => {
     scales: { y: { beginAtZero: true } }
   };
 
-  // ==========================================
-  // 5. JSX / UI RENDER
-  // ==========================================
   return (
-    <main className="admin-overview">
-      <div className="public-budget">
-        <h1>Public Budget Dashboard</h1>
+    <main className="expense-page">
+      <div className="expense-recording-page">
+        <h2>Public Budget Dashboard</h2>
         <p className="subtitle">Real-time view of budget allocations and spending</p>
-
-        <section className="summary-cards">
-          <div className="over-card">
-            <h3>Total Budget</h3>
-            <p className="amount">₱<span>{summary.totalBudget.toLocaleString()}</span></p>
-            <small>Allocated across all categories</small>
-          </div>
-
-          <div className="over-card">
-            <h3>Total Spent</h3>
-            <p className="amount highlight">₱<span>{summary.totalSpent.toLocaleString()}</span></p>
-            <small><span>{summary.percentage}%</span> of total budget</small>
-          </div>
-
-          <div className="over-card">
-            <h3>Remaining</h3>
-            <p className="amount green">₱<span>{summary.remaining.toLocaleString()}</span></p>
-            <small>Available for future expenses</small>
-          </div>
-
-          <div className="over-card">
-            <h3>Validation Status</h3>
-            <p className="amount"><span>{summary.pendingCount}</span></p>
-            <small><span>{summary.pendingCount}</span> pending validations</small>
-          </div>
-        </section>
       </div>
 
+      <section className="summary-cards" style={{ marginBottom: '30px' }}>
+        <div className="over-card">
+          <h3>Total Budget</h3>
+          <p className="amount" style={{ color: '#3498db' }}>₱<span>{summary.totalBudget.toLocaleString()}</span></p>
+        </div>
+        <div className="over-card">
+          <h3>Total Spent</h3>
+          <p className="amount highlight">₱<span>{summary.totalSpent.toLocaleString()}</span></p>
+        </div>
+        <div className="over-card">
+          <h3>Remaining</h3>
+          <p className="amount green">₱<span>{summary.remaining.toLocaleString()}</span></p>
+        </div>
+        <div className="over-card">
+          <h3>Validation Status</h3>
+          <p className="amount" style={{ color: '#f39c12' }}><span>{summary.pendingCount}</span></p>
+        </div>
+      </section>
+
+      {/* FIX: Ibinalik yung "charts" at "chart-card" classes para may border */}
       <section className="charts">
         <div className="chart-card">
           <h3>Budget Allocation by Category</h3>
           <p className="subtitle">Current spending vs allocated amounts</p>
-          {/* IPINALIT ANG CHART DITO */}
           <div style={{ height: '300px' }}>
              <Bar data={categoryChartData} options={chartOptions} />
           </div>
@@ -183,13 +156,13 @@ const AdminOverview = () => {
         <div className="chart-card">
           <h3>Monthly Spending Trend</h3>
           <p className="subtitle">Spending patterns over the last 6 months</p>
-           {/* IPINALIT ANG CHART DITO */}
           <div style={{ height: '300px' }}>
              <Bar data={trendChartData} options={chartOptions} />
           </div>
         </div>
       </section>
 
+      {/* FIX: Ibinalik yung "budget-transactions" wrapper para tama ang borders */}
       <section className="budget-transactions">
         <section className="budget-section card">
           <h3>Budget Utilization by Category</h3>

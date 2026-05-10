@@ -4,9 +4,6 @@ import '../../index.css';
 const ValidationCenter = () => {
   const API_BASE_URL = '/api'; 
 
-  // ==========================================
-  // 1. REACT STATE (Pampalit sa document.getElementById)
-  // ==========================================
   const [queue, setQueue] = useState([]);
   const [summary, setSummary] = useState({
     pendingCount: 'Loading...',
@@ -21,20 +18,13 @@ const ValidationCenter = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [comments, setComments] = useState('');
 
-  // ==========================================
-  // 2. useEffect (Pampalit sa DOMContentLoaded)
-  // ==========================================
   useEffect(() => {
     loadQueue();
     loadSummary();
   }, []);
 
-  // ==========================================
-  // 3. FUNCTIONS / API CALLS
-  // ==========================================
-const loadQueue = async () => {
+  const loadQueue = async () => {
     try {
-      // Assuming your backend server is on port 3000
       const res = await fetch(`http://localhost:3000${API_BASE_URL}/validation/queue`); 
       
       if (!res.ok) {
@@ -45,8 +35,6 @@ const loadQueue = async () => {
       setQueue(data);
     } catch (err) {
       console.error('Error loading validation queue:', err);
-      // Optional: Set to empty array so the table shows "No data yet" instead of loading forever
-      // setQueue([]); 
     }
   };
 
@@ -91,37 +79,35 @@ const loadQueue = async () => {
     closeValidationPopup();
   };
 
-  // ==========================================
-  // 4. JSX / HTML (Yung mismong UI)
-  // ==========================================
   return (
-    <main className="validation-center-page">
-      <div className="validation-header">
+    <main className="expense-page">
+      <div className="expense-recording-page">
         <h2>Validation Center</h2>
         <p className="subtitle">Review and validate budget allocations and expenses</p>
-        <div className="summary-cards">
-          <div className="over-card">
-            <h3>Pending Validations</h3>
-            <div className="value">{summary.pendingCount}</div>
-            <small>Awaiting review</small>
-          </div>
-          <div className="over-card">
-            <h3>High Priority</h3>
-            <div className="value highlight">{summary.highPriorityCount}</div>
-            <small>Urgent attention needed</small>
-          </div>
-          <div className="over-card">
-            <h3>Validated</h3>
-            <div className="value green">{summary.validatedThisMonth}</div>
-            <small>This month</small>
-          </div>
-          <div className="over-card">
-            <h3>Ready for Approval</h3>
-            <div className="value">{summary.readyForApproval}</div>
-            <small>Pending final approval</small>
-          </div>
-        </div>
       </div>
+
+      <section className="summary-cards" style={{ marginBottom: '30px' }}>
+        <div className="over-card">
+          <h3>Pending Validations</h3>
+          <p className="amount" style={{ color: '#f39c12' }}><span>{summary.pendingCount}</span></p>
+          <small>Awaiting review</small>
+        </div>
+        <div className="over-card">
+          <h3>High Priority</h3>
+          <p className="amount highlight"><span>{summary.highPriorityCount}</span></p>
+          <small>Urgent attention needed</small>
+        </div>
+        <div className="over-card">
+          <h3>Validated</h3>
+          <p className="amount green"><span>{summary.validatedThisMonth}</span></p>
+          <small>This month</small>
+        </div>
+        <div className="over-card">
+          <h3>Ready for Approval</h3>
+          <p className="amount" style={{ color: '#3498db' }}><span>{summary.readyForApproval}</span></p>
+          <small>Pending final approval</small>
+        </div>
+      </section>
 
       <div className="budgetvalidation-table-section card">
         <div className="table-header">
@@ -165,7 +151,6 @@ const loadQueue = async () => {
               </tr>
             </thead>
             <tbody>
-              {/* Kung may laman ang queue, mag-m-map tayo. Kung wala, loading muna */}
               {queue.length === 0 ? (
                 <tr><td colSpan="10">Loading validation queue... (No data yet)</td></tr>
               ) : (
