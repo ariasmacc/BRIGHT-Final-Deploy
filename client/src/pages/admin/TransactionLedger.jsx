@@ -17,7 +17,7 @@ const TransactionLedger = () => {
     const fetchTransactions = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch(`${API_BASE_URL}/transactions`);
+        const res = await fetch(`http://localhost:3000${API_BASE_URL}/transactions`);
         if (!res.ok) throw new Error(`Failed to fetch transactions: ${res.statusText}`);
         const data = await res.json();
         setAllTransactions(data);
@@ -68,26 +68,38 @@ const TransactionLedger = () => {
   };
 
   return (
-    <main className="transaction-ledger-page">
-      <div className="ledger-info">
+    <main className="expense-page">
+      <div className="expense-recording-page" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div className="ledger-title-container">
           <h2>Transaction Ledger</h2>
           <p className="subtitle">Blockchain-inspired record of all financial transactions</p>
         </div>
-        <p className="crypto-secured">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="crypto-icon">
+        <p className="crypto-secured" style={{ color: '#2ecc71', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="crypto-icon" style={{ width: '18px', marginRight: '5px' }}>
             <path d="M12 2l7 4v6c0 5-3.58 9.74-7 10-3.42-.26-7-5-7-10V6l7-4z" />
           </svg>
           Cryptographically Secured
         </p>
       </div>
 
-      <div className="summary-cards">
-        <div className="over-card"><h3>Total Blocks</h3><div className="value">{summary.blocks}</div></div>
-        <div className="over-card"><h3>Total Transactions</h3><div className="value">{summary.txns}</div></div>
-        <div className="over-card"><h3>Confirmed</h3><div className="value">{summary.confirmed}</div></div>
-        <div className="over-card"><h3>Total Value</h3><div className="value">{summary.value}</div></div>
-      </div>
+      <section className="summary-cards" style={{ marginBottom: '30px', marginTop: '20px' }}>
+        <div className="over-card">
+          <h3>Total Blocks</h3>
+          <p className="amount"><span>{summary.blocks}</span></p>
+        </div>
+        <div className="over-card">
+          <h3>Total Transactions</h3>
+          <p className="amount" style={{ color: '#3498db' }}><span>{summary.txns}</span></p>
+        </div>
+        <div className="over-card">
+          <h3>Confirmed</h3>
+          <p className="amount green"><span>{summary.confirmed}</span></p>
+        </div>
+        <div className="over-card">
+          <h3>Total Value</h3>
+          <p className="amount highlight"><span>{summary.value}</span></p>
+        </div>
+      </section>
 
       <div className="budgetvalidation-table-section card">
         <div className="table-header">
@@ -119,7 +131,7 @@ const TransactionLedger = () => {
                   </div>
                 )}
               </div>
-              <button type="button" className="btn-secondary" onClick={() => window.location.href = `${API_BASE_URL}/transactions/export`}>
+              <button type="button" className="btn-secondary" onClick={() => window.location.href = `http://localhost:3000${API_BASE_URL}/transactions/export`}>
                 Export CSV
               </button>
             </div>
