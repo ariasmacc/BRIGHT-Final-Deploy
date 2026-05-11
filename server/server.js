@@ -234,37 +234,36 @@ app.get('/admin/download-db', auth, checkRole('Admin'), (req, res) => {
     }
 });
 
-    // --- [NEW] DATABASE MIGRATION FOR 2FA ---
-    // We use a try/catch approach or check for errors so it doesn't crash 
-    // if the columns already exist.
-    const db = require('./config/database'); 
-    db.serialize(() => {
-        db.run("ALTER TABLE Users ADD COLUMN two_fa_code TEXT", (err) => {
-            if (err) console.log("ℹ️ two_fa_code column already exists.");
-            else console.log("✅ Added two_fa_code column successfully!");
-        });
-        db.run("ALTER TABLE Users ADD COLUMN two_fa_expires DATETIME", (err) => {
-            if (err) console.log("ℹ️ two_fa_expires column already exists.");
-            else console.log("✅ Added two_fa_expires column successfully!");
-        });
+ // =====================================================================
+// --- DATABASE MIGRATIONS (2FA & Password Reset) ---
+// =====================================================================
+// We declare 'db' ONLY ONCE here.
+const db = require('./config/database'); 
+
+db.serialize(() => {
+    // 1. Add 2FA Columns
+    db.run("ALTER TABLE Users ADD COLUMN two_fa_code TEXT", (err) => {
+        if (err) console.log("ℹ️ two_fa_code column already exists.");
+        else console.log("✅ Added two_fa_code column successfully!");
     });
+    db.run("ALTER TABLE Users ADD COLUMN two_fa_expires DATETIME", (err) => {
+        if (err) console.log("ℹ️ two_fa_expires column already exists.");
+        else console.log("✅ Added two_fa_expires column successfully!");
+    });
+
+    // 2. Add Reset Token Columns
+    db.run("ALTER TABLE Users ADD COLUMN reset_token TEXT", (err) => {
+        if (err) console.log("ℹ️ reset_token column already exists.");
+        else console.log("✅ Added reset_token column successfully!");
+    });
+    db.run("ALTER TABLE Users ADD COLUMN reset_token_expires DATETIME", (err) => {
+        if (err) console.log("ℹ️ reset_token_expires column already exists.");
+        else console.log("✅ Added reset_token_expires column successfully!");
+    });
+});
 
 // --- EXECUTE RESCUE OPERATION ---
 syncUploadsToVolume(); 
-
-// --- TEMPORARY DATABASE MIGRATION ---
-// Run this once to add the reset token columns to your table
-const db = require('./config/database'); 
-db.serialize(() => {
-  db.run("ALTER TABLE Users ADD COLUMN reset_token TEXT", (err) => {
-    if (err) console.log("ℹ️ reset_token column already exists or was already added.");
-    else console.log("✅ Added reset_token column successfully!");
-  });
-  db.run("ALTER TABLE Users ADD COLUMN reset_token_expires DATETIME", (err) => {
-    if (err) console.log("ℹ️ reset_token_expires column already exists or was already added.");
-    else console.log("✅ Added reset_token_expires column successfully!");
-  });
-});
 
 // --- Start Server ---
 app.listen(PORT, () => {

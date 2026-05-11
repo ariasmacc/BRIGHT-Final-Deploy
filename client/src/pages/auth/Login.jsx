@@ -94,12 +94,6 @@ const Login = () => {
   };
 
 
-  // IF userId is present in the URL, show OTPVerification
-  if (userIdFromUrl) {
-    return <OTPVerification />;
-  }
-
-
   return (
     <div className="signup-body" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <div className="signup-page-container">
