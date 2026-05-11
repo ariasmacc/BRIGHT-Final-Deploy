@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom'; 
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom'; 
 import '../../index.css'; 
-import OTPVerification from './OTPVerification'; 
 
 const Login = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -15,10 +13,6 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   
-  // Extract userId from URL if it exists
-  const query = new URLSearchParams(location.search);
-  const userIdFromUrl = query.get('userId');
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [modalSuccess, setModalSuccess] = useState('');
@@ -45,23 +39,17 @@ const Login = () => {
         const data = await response.json();
 
         if (response.ok) {
-            if (data.requires2FA) {
-                // Store temporary info for resend logic
-                sessionStorage.setItem('tempUsername', username);
-                sessionStorage.setItem('tempPassword', password);
-                sessionStorage.setItem('tempRole', role);
-                
-                // Navigate to the same page but with the userId in the query string
-                // This triggers a re-render and allows OTPVerification to pick up the ID
-                navigate(`/auth/login?userId=${data.userId}`, { replace: true });
-            } else {
-                localStorage.setItem('user', JSON.stringify(data.user));
-                if (role === 'Admin') {
-                    navigate('/admin/overview'); 
-                } else {
-                    navigate('/validator/overview');
-                }
-            }
+            // --- MANDATORY 2FA FLOW ---
+            // We no longer check "if (data.requires2FA)". 
+            // We ALWAYS store the temp info and redirect to OTP.
+            
+            sessionStorage.setItem('tempUsername', username);
+            sessionStorage.setItem('tempPassword', password);
+            sessionStorage.setItem('tempRole', role);
+            
+            // Redirect to the dedicated OTP page for EVERY successful login
+            navigate(`/auth/verify-otp?userId=${data.userId}`);
+            
         } else {
             setErrorMsg(data.error || data.msg || 'Invalid credentials. Please try again.');
         }
@@ -73,11 +61,6 @@ const Login = () => {
         setIsLoading(false);
     }
   };
-
-  // IF userId is present in the URL, show OTPVerification
-  if (userIdFromUrl) {
-    return <OTPVerification />;
-  }
 
   return (
     <div className="signup-body" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

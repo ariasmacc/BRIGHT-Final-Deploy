@@ -368,7 +368,7 @@ const ValidatorLayout = () => {
                 <input
                   type={showNewPass ? 'text' : 'password'}
                   className="modal-input"
-                  placeholder="Minimum 6 characters"
+                  placeholder="Minimum 8 characters"
                   style={{ paddingRight: '40px' }}
                   value={passwordForm.newPass}
                   onChange={(e) => setPasswordForm({ ...passwordForm, newPass: e.target.value })}
@@ -380,7 +380,7 @@ const ValidatorLayout = () => {
                   <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.2" />
                 </svg>
               </div>
-              <p className="field-hint">Must be at least 6 characters long</p>
+              <p className="field-hint">Must be at least 8 characters long</p>
 
               {/* Confirm New Password */}
               <label className="input-label" style={{ marginTop: '15px', display: 'block' }}>Confirm New Password</label>

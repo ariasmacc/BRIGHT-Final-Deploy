@@ -113,7 +113,22 @@ const Footer = () => {
             {activeModal === 'team' && (
               <>
                 <h2 style={{ marginBottom: '15px' }}>Team</h2>
-                <p>BRIGHT Development Team – BSCS 3A (2026)</p>
+                <p>
+                  BRIGHT Development Team – BSCS 3A (2026)<br />
+                  <span><br /> Lead Developers: <br /></span>
+                  Ianna Erin Marquez <br />
+                  Cyrel Yvette Morales <br />
+                  <span><br /> Developers: <br /></span>
+                  Aira Camille Banusing<br />
+                  Jhon Nicholson Manalang<br />
+                  <span><br />Founders: <br /></span>
+                  Erik James Medallada<br />
+                  Jackielyn Lariestan <br />
+                  Carla Mae Cardano <br />
+                  Ianna Erin Marquez <br />
+                  Cyrel Yvette Morales <br />
+                  <br />For support: <a href="mailto:bright.system.dev@gmail.com">bright.system.dev@gmail.com</a>
+                </p>
               </>
             )}
           </div>

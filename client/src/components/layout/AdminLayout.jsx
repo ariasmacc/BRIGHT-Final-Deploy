@@ -134,8 +134,8 @@ const AdminLayout = () => {
       alert('New passwords do not match.');
       return;
     }
-    if (newPass.length < 6) {
-      alert('Password must be at least 6 characters.');
+    if (newPass.length < 8) {
+      alert('Password must be at least 8 characters.');
       return;
     }
 
@@ -392,7 +392,7 @@ const AdminLayout = () => {
                   <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.2" />
                 </svg>
               </div>
-              <p className="field-hint">Must be at least 6 characters long</p>
+              <p className="field-hint">Must be at least 8 characters long</p>
 
               {/* Confirm New Password */}
               <label className="input-label" style={{ marginTop: '15px', display: 'block' }}>Confirm New Password</label>
