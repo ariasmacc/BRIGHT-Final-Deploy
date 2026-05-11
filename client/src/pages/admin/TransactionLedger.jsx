@@ -11,13 +11,18 @@ const TransactionLedger = () => {
   const [isTypeOpen, setIsTypeOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
-  const API_BASE_URL = '/api'; 
+  const BACKEND_URL = 'http://localhost:3000';
+  const API_BASE_URL = '/api/transactions';
 
-  useEffect(() => {
+    useEffect(() => {
     const fetchTransactions = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch(`http://localhost:3000${API_BASE_URL}/transactions`);
+        // FIX: Added credentials: 'include' to pass the JWT cookie
+        const res = await fetch(`${BACKEND_URL}${API_BASE_URL}`, {
+          credentials: 'include' 
+        });
+        
         if (!res.ok) throw new Error(`Failed to fetch transactions: ${res.statusText}`);
         const data = await res.json();
         setAllTransactions(data);
@@ -131,7 +136,7 @@ const TransactionLedger = () => {
                   </div>
                 )}
               </div>
-              <button type="button" className="btn-secondary" onClick={() => window.location.href = `http://localhost:3000${API_BASE_URL}/transactions/export`}>
+              <button type="button" className="btn-secondary" onClick={() => window.location.href = `${BACKEND_URL}${API_BASE_URL}/export`}>
                 Export CSV
               </button>
             </div>

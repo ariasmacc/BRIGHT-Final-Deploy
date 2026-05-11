@@ -157,23 +157,35 @@ exports.forgotPassword = (req, res) => {
       }
 
       // 4. Send the email (with the *unhashed* token)
-      const resetLink = `https://bright-website.up.railway.app/reset-password.html?token=${token}`;
+      // NEW (Pointing to your local React app)
+      const resetLink = `http://localhost:5173/auth/reset-password?token=${token}`;
 
       transporter.sendMail({
         from: `"BRIGHT Admin" <${process.env.EMAIL_USER}>`,
         to: user.email,
         subject: 'Password Reset Request for BRIGHT',
+        // Added a text version for better deliverability
+        text: `Hello ${user.full_name}, reset your password here: ${resetLink}`,
         html: `
-            <p>Hello ${user.full_name},</p>
-            <p>You requested a password reset. Please click the link below to set a new password:</p>
-            <p><a href="${resetLink}" style="font-size: 16px; font-weight: bold; color: white; background: #2c3e50; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Reset Your Password</a></p>
-            <p>This link will expire in 15 minutes.</p>
-            <p>If you did not request this, please ignore this email.</p>
+            <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee;">
+                <h2 style="color: #2c3e50;">Password Reset Request</h2>
+                <p>Hello <strong>${user.full_name}</strong>,</p>
+                <p>You requested a password reset for your BRIGHT account. Please click the button below to set a new password:</p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${resetLink}" style="font-size: 16px; font-weight: bold; color: white; background: #2c3e50; padding: 12px 25px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                        Reset Your Password
+                    </a>
+                </div>
+                <p style="color: #7f8c8d; font-size: 14px;">This link will expire in 15 minutes.</p>
+                <p style="color: #7f8c8d; font-size: 14px;">If you did not request this, please ignore this email.</p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                <p style="font-size: 10px; color: #bdc3c7;">Reference ID: ${token.substring(0,8)} | Sent at: ${new Date().toLocaleTimeString()}</p>
+            </div>
         `
       }).catch(err => {
         console.error("Error sending password reset email:", err);
       });
-
+      
       // Send the generic success message
       res.json({ message: 'If an account with that email exists, a reset link has been sent.' });
     });

@@ -6,121 +6,22 @@ import Footer from '../../components/layout/Footer';
 const ValidatorLayout = () => {
   const navigate = useNavigate();
   
-    const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-    const [activeModal, setActiveModal] = useState(null);
-    const [user, setUser] = useState({ name: 'User', role: 'Staff' });
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState(null); 
+  const [user, setUser] = useState({ name: 'User', role: 'Validator' });
   
-    const dropdownRef = useRef(null);
-  
-    // Password visibility toggles
-    const [showCurrentPass, setShowCurrentPass] = useState(false);
-    const [showNewPass, setShowNewPass] = useState(false);
-    const [showConfirmPass, setShowConfirmPass] = useState(false);
-  
-    // Controlled inputs for Change Password form
-    const [passwordForm, setPasswordForm] = useState({
-      current: '',
-      newPass: '',
-      confirm: '',
-    });
-  
-    // Controlled inputs for Account Settings form
-    const [accountForm, setAccountForm] = useState({
-      username: '',
-      name: '',
-      email: '',
-      position: '',
-      confirmPassword: '',
-    });
-  
-    // ── Load user from localStorage on mount ──────────────────────────
-    useEffect(() => {
-      const savedUser = localStorage.getItem('user');
-      if (savedUser) {
-        try {
-          const parsed = JSON.parse(savedUser);
-          setUser(parsed);
-        } catch (e) {
-          console.error('Failed to parse user data');
-        }
-      } else {
-        navigate('/auth/login');
-      }
-    }, []);
-  
-    // ── Close dropdown on outside click ───────────────────────────────
-    useEffect(() => {
-      const handleClickOutside = (event) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-          setIsUserDropdownOpen(false);
-        }
-      };
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-  
-    // ── Pre-fill Account Settings form when modal opens ───────────────
-    const handleOpenAccountSettings = () => {
-      setAccountForm({
-        username: user.username || '',
-        name: user.name || '',
-        email: user.email || '',
-        position: user.position || '',
-        confirmPassword: '',
-      });
-      setActiveModal('accountSettingsModal');
-      setIsUserDropdownOpen(false);
-    };
-  
-    const closeModal = () => {
-      setActiveModal(null);
-      setPasswordForm({ current: '', newPass: '', confirm: '' });
-    };
-  
-    // ── Logout ─────────────────────────────────────────────────────────
-    const handleLogout = () => {
-      localStorage.removeItem('user');
-      // Clear token cookie
-      document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      setIsUserDropdownOpen(false);
-      navigate('/auth/login');
-    };
-  
-    // ── Account Settings Submit ────────────────────────────────────────
-    const handleUpdateAccount = async () => {
-      const data = {
-        username: accountForm.username,
-        full_name: accountForm.name,
-        email: accountForm.email,
-        position: accountForm.position,
-        confirm_password: accountForm.confirmPassword,
-      };
-  
-      try {
-        const res = await fetch('/api/users/account/settings', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-        const result = await res.json();
-  
-        if (!res.ok) throw new Error(result.error || 'Update failed');
-  
-        alert('Account updated successfully!');
-  
-        // Update localStorage and state
-        const updatedUser = {
-          ...user,
-          name: data.full_name,
-          username: data.username,
-          email: data.email,
-          position: data.position,
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        setUser(updatedUser);
-        closeModal();
-      } catch (err) {
-        alert(`Error: ${err.message}`);
+  const dropdownRef = useRef(null);
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try { 
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error("Failed to parse user data");
       }
     };
   
