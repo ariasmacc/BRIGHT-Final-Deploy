@@ -47,88 +47,66 @@ exports.login = (req, res) => {
   if (!username || !password || !role) {
     return res.status(400).json({ error: 'Username, password, and role are required' });
   }
-  if (role === 'Staff') {
-    return res.status(401).json({ error: 'Invalid username, password, or role' });
-  }
 
   User.findByUsername(username, (err, user) => {
-    if (err) {
-      console.error("Database error during findByUsername:", err.message);
-      return res.status(500).json({ error: 'Database error during login' });
-    }
-    if (!user) {
-       console.warn(`Login attempt failed: User '${username}' not found.`);
-      return res.status(401).json({ error: 'Invalid username, password, or role' });
-    }
-    if (user.role !== role) {
-        console.warn(`Role mismatch for user ${username}. Submitted: ${role}, DB: ${user.role}`);
-        return res.status(401).json({ error: 'Invalid username, password, or role' });
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (!user || user.role !== role) {
+      return res.status(401).json({ error: 'Invalid credentials or role' });
     }
 
-    const submittedPasswordTrimmed = password.trim();
-    const storedHashTrimmed = user.password_hash ? user.password_hash.trim() : '';
+    bcrypt.compare(password, user.password_hash.trim(), (err, isMatch) => {
+      if (err) return res.status(500).json({ error: 'Error comparing password' });
+      if (!isMatch) return res.status(401).json({ error: 'Invalid credentials' });
 
-    if (!storedHashTrimmed) {
-        console.error(`User ${username} found but has no password hash in the database.`);
-        return res.status(500).json({ error: 'User account configuration error.' });
-    }
+      // --- NEW: 2FA INTERCEPTION LOGIC ---
+      
+      // 1. Generate a random 6-digit code
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // 2. Hash it for the database
+      const hashedCode = crypto.createHash('sha256').update(otp).digest('hex');
+      
+      // 3. Set expiry (5 minutes from now)
+      const expires = new Date(Date.now() + 5 * 60 * 1000)
+        .toISOString()
+        .slice(0, 19)
+        .replace('T', ' ');
 
-    bcrypt.compare(submittedPasswordTrimmed, storedHashTrimmed, (errcrypt, isMatch) => {
-      if (errcrypt) {
-        console.error("Error during bcrypt.compare:", errcrypt.message);
-        return res.status(500).json({ error: 'Error comparing password' });
-      }
-
-      if (isMatch) {
-        // 1. Create the VIP Pass (JWT Token)
-        const payload = {
-          userId: user.user_id,
-          username: user.username,
-          role: user.role,
-          name: user.full_name 
-        };
-
-        // Sign the token using your secret from .env
-        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
-
-        // 2. STICK THE COOKIE TO THE BROWSER
-        // This is the most important part! This fixes the 401 errors.
-        res.cookie('token', token, {
-          httpOnly: true, 
-          secure: process.env.NODE_ENV === 'production', 
-          sameSite: 'lax', 
-          maxAge: 3600000 // 1 hour
-        });
-
-        // 3. (Optional) Still send the email notification so you know it works
-        const transporter = req.app.get('transporter');
-        if (transporter) {
-            transporter.sendMail({
-                from: `"BRIGHT System" <${process.env.EMAIL_USER}>`,
-                to: user.email,
-                subject: 'New Login Detected',
-                html: `<p>Hello ${user.full_name}, you have successfully logged into the BRIGHT Dashboard.</p>`
-            }).catch(err => console.error("Email notification failed:", err));
+      // 4. Save to Database
+      User.saveTwoFACode(user.user_id, hashedCode, expires, (dbErr) => {
+        if (dbErr) {
+          console.error("Error saving OTP:", dbErr.message);
+          return res.status(500).json({ error: 'Failed to generate security code.' });
         }
 
-        // 4. Tell the Frontend to go ahead and open the door
+        // 5. Send the email with the RAW (unhashed) code
+        const transporter = req.app.get('transporter');
+        transporter.sendMail({
+          from: `"BRIGHT Security" <${process.env.EMAIL_USER}>`,
+          to: user.email,
+          subject: 'Your BRIGHT Verification Code',
+          html: `
+            <div style="font-family: sans-serif; text-align: center; padding: 20px; border: 1px solid #eee;">
+              <h2>Security Verification</h2>
+              <p>Hello ${user.full_name},</p>
+              <p>Your one-time verification code is:</p>
+              <h1 style="color: #34495e; font-size: 48px; letter-spacing: 10px;">${otp}</h1>
+              <p>This code will expire in 5 minutes.</p>
+              <p style="color: #7f8c8d; font-size: 12px;">If you didn't try to log in, please secure your account.</p>
+            </div>
+          `
+        }).catch(emailErr => console.error("OTP Email failed:", emailErr));
+
+        // 6. Tell the frontend to switch to the OTP screen
         return res.json({
-          message: 'Login successful!',
-          user: {
-              id: user.user_id,
-              name: user.full_name,
-              username: user.username,
-              role: user.role,
-              position: user.position || 'Staff'
-          }
+          message: 'OTP Sent',
+          requires2FA: true,
+          userId: user.user_id
         });
-      } else {
-        console.warn(`Password mismatch detected for user ${username}`);
-        return res.status(401).json({ error: 'Invalid username, password, or role' });
-      }
+      });
     });
   });
-};
+};  
 
 /**
  * 1. FORGOT PASSWORD

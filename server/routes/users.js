@@ -19,7 +19,17 @@ router.post(
     // Rules
     body('username', 'Username is required').notEmpty().trim(),
     body('full_name', 'Full name is required').notEmpty().trim(),
-    body('password', 'Password must be at least 6 characters long').isLength({ min: 6 }),
+    body('password', 'Password must be at least 6 characters long')
+    .isLength({ min: 8 })
+      .withMessage('Password must be at least 8 characters long')
+      .matches(/[A-Z]/)
+      .withMessage('Password must contain at least one uppercase letter')
+      .matches(/[0-9]/)
+      .withMessage('Password must contain at least one number')
+      .matches(/[a-zA-Z0-9]/)
+      .withMessage('Password must be alphanumeric')
+      .matches(/[!@#$%^&*.]/)
+      .withMessage('Password must consist of at least one special character'),
     body('email', 'Please include a valid email').isEmail().normalizeEmail(),
     body('role', 'Role must be Admin or Validator').isIn(['Admin', 'Validator']),
     body('position', 'Position is required').notEmpty().trim()
@@ -41,7 +51,17 @@ router.post(
   '/reset-password',
   [
     body('token', 'Token is required').notEmpty(),
-    body('newPassword', 'Password must be at least 6 characters long').isLength({ min: 6 })
+    body('newPassword')
+      .isLength({ min: 8 })
+      .withMessage('Password must be at least 8 characters long')
+      .matches(/[A-Z]/)
+      .withMessage('Password must contain at least one uppercase letter')
+      .matches(/[0-9]/)
+      .withMessage('Password must contain at least one number')
+      .matches(/[a-zA-Z0-9]/)
+      .withMessage('Password must be alphanumeric')
+      .matches(/[!@#$%^&*.]/)
+      .withMessage('Password must consist of at least one special character')
   ],
   controller.resetPassword // <-- This was missing
 );
