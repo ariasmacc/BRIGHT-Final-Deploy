@@ -234,6 +234,21 @@ app.get('/admin/download-db', auth, checkRole('Admin'), (req, res) => {
     }
 });
 
+    // --- [NEW] DATABASE MIGRATION FOR 2FA ---
+    // We use a try/catch approach or check for errors so it doesn't crash 
+    // if the columns already exist.
+    const db = require('./config/database'); 
+    db.serialize(() => {
+        db.run("ALTER TABLE Users ADD COLUMN two_fa_code TEXT", (err) => {
+            if (err) console.log("ℹ️ two_fa_code column already exists.");
+            else console.log("✅ Added two_fa_code column successfully!");
+        });
+        db.run("ALTER TABLE Users ADD COLUMN two_fa_expires DATETIME", (err) => {
+            if (err) console.log("ℹ️ two_fa_expires column already exists.");
+            else console.log("✅ Added two_fa_expires column successfully!");
+        });
+    });
+
 // --- EXECUTE RESCUE OPERATION ---
 syncUploadsToVolume(); 
 
