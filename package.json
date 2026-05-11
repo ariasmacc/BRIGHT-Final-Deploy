@@ -1,8 +1,8 @@
 {
-  "name": "bright-(modified)",
+  "name": "server",
   "version": "1.0.0",
-  "description": "BRIGHT",
-  "main": "index.js",
+  "description": "",
+  "main": "server.js",
   "engines": {
     "node": "20.x"
   },
