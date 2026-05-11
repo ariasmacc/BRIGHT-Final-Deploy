@@ -153,10 +153,12 @@ const AdminOverview = () => {
         <div className="over-card">
           <h3>Total Budget</h3>
           <p className="amount" style={{ color: '#3498db' }}>₱<span>{summary.totalBudget.toLocaleString()}</span></p>
+          <small>Allocated across all categories</small>
         </div>
         <div className="over-card">
           <h3>Total Spent</h3>
           <p className="amount highlight">₱<span>{summary.totalSpent.toLocaleString()}</span></p>
+          <small><span id="budget-percentage">{summary.percentage}%</span> of total budget</small>
         </div>
         <div className="over-card">
           <h3>Remaining</h3>
@@ -165,6 +167,8 @@ const AdminOverview = () => {
         <div className="over-card">
           <h3>Validation Status</h3>
           <p className="amount" style={{ color: '#f39c12' }}><span>{summary.pendingCount}</span></p>
+          <small>Available for future expenses</small>
+          <small><span id="pending-count">0</span> pending validations</small>
         </div>
       </section>
 
