@@ -106,7 +106,7 @@ const Signup = () => {
 
             <label>Password</label>
             <div className="signup-password-wrapper">
-              <input type={showPassword ? "text" : "password"} placeholder="Must be at least 6 characters" required value={password} onChange={(e) => setPassword(e.target.value)} />
+              <input type={showPassword ? "text" : "password"} placeholder="Must be at least 8 characters, can be any combination of letters, numbers, and special characters" required value={password} onChange={(e) => setPassword(e.target.value)} />
               <svg onClick={() => setShowPassword(!showPassword)} width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ cursor: 'pointer', opacity: showPassword ? 1 : 0.6 }}>
                 <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" stroke="#6B7280" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="12" r="3" stroke="#6B7280" strokeWidth="1.2"/>
               </svg>
