@@ -74,10 +74,43 @@ const Login = () => {
     }
   };
 
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setModalSuccess('');
+    setErrorMsg('');
+
+    try {
+      const response = await fetch('http://localhost:3000/api/users/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: forgotEmail })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // We use the message from your backend controller
+        setModalSuccess(data.message); 
+      } else {
+        setErrorMsg(data.error || 'Failed to request reset link.');
+      }
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      setErrorMsg('Cannot connect to the server. Is it running?');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   // IF userId is present in the URL, show OTPVerification
   if (userIdFromUrl) {
     return <OTPVerification />;
   }
+
 
   return (
     <div className="signup-body" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -178,11 +211,26 @@ const Login = () => {
           <div className="fp-modal-content">
             <span className="fp-close" onClick={() => setIsModalOpen(false)}>&times;</span>
             <h2>Forgot Password</h2>
-            <form onSubmit={(e) => { e.preventDefault(); setModalSuccess('Link sent!'); }}>
+            
+            {/* 1. Updated onSubmit to use the new function */}
+            <form onSubmit={handleForgotPassword}>
               <label>Email Address</label>
-              <input type="email" required value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} />
-              {modalSuccess && <div className="alert success" style={{ color: 'green', marginBottom: '10px' }}>{modalSuccess}</div>}
-              <button type="submit" className="signup-btn-primary">Send Reset Link</button>
+              <input 
+                type="email" 
+                required 
+                value={forgotEmail} 
+                onChange={(e) => setForgotEmail(e.target.value)} 
+                placeholder="example@gmail.com"
+              />
+              
+              {/* 2. Success and Error Message Display */}
+              {modalSuccess && <div className="alert success" style={{ color: 'green', marginBottom: '10px', fontSize: '14px' }}>{modalSuccess}</div>}
+              {errorMsg && <div className="alert error" style={{ color: '#dc2626', marginBottom: '10px', fontSize: '14px' }}>{errorMsg}</div>}
+              
+              {/* 3. Disabled button while loading */}
+              <button type="submit" className="signup-btn-primary" disabled={isLoading}>
+                {isLoading ? 'Sending...' : 'Send Reset Link'}
+              </button>
             </form>
           </div>
         </div>

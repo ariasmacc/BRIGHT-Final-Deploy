@@ -3,16 +3,17 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 // Layouts
 import PublicLayout from './pages/Public/PublicLayout'; 
 import AdminLayout from './components/layout/AdminLayout';
-import ValidatorLayout from './components/layout/ValidatorLayout'; 
+import ValidatorLayout from './components/layout/ValidatorLayout';
 
 // Auth & Public Pages
-import Login from './pages/auth/login'; 
-import Signup from './pages/auth/signup';
+import Login from './pages/auth/Login';
+import Signup from './pages/auth/Signup';
 import OTPVerification from './pages/auth/OTPVerification';
 import Welcome from './pages/Public/Welcome';
 import Overview from './pages/Public/PublicOverview';
 import Ledger from './pages/Public/PublicTL';
 import Documents from './pages/Public/PublicDocu';
+import ResetPassword from './pages/auth/ResetPassword';
 
 // Admin Pages
 import AdminOverview from './pages/admin/AdminOverview';
@@ -32,6 +33,7 @@ function App() {
         <Route path="/auth/login" element={<Login />} />
         <Route path="/auth/signup" element={<Signup />} />
         <Route path="/auth/verify-otp" element={<OTPVerification />} />
+        <Route path="/auth/reset-password" element={<ResetPassword />} />
         
         {/* 2. ADMIN ROUTES */}
         <Route path="/admin" element={<AdminLayout />}>
