@@ -6,6 +6,11 @@
   "engines": {
     "node": "20.x"
   },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "postinstall": "npm rebuild sqlite3"
+  },
   "dependencies": {
     "acorn": "^8.16.0",
     "acorn-jsx": "^5.3.2",
@@ -118,12 +123,6 @@
     "yocto-queue": "^0.1.0",
     "zod": "^4.3.6",
     "zod-validation-error": "^4.0.2"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "client": "npm run dev --prefix client",
-    "server": "npm start --prefix server",
-    "dev": "concurrently \"npm run client\" \"npm run server\""
   },
   "repository": {
     "type": "git",
