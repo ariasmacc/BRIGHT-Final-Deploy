@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../../index.css';
 
 const ValidationCenter = () => {
-  const API_BASE_URL = 'http://localhost:3000/api'; // Inayos para sa fetch calls
+  const API_BASE_URL = '/api'; // Inayos para sa fetch calls
 
   // ==========================================
   // 1. REACT STATE

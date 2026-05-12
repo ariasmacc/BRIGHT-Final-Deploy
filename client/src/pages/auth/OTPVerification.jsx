@@ -11,10 +11,7 @@ const OTPVerification = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // 🟢 PINALITAN NA NATIN NG LIVE RAILWAY URL
-    //const API_BASE_URL = 'https://amusing-comfort-production.up.railway.app/api'; 
-
-    const API_BASE_URL = 'http://localhost:3000/api';
+    const API_BASE_URL = '/api';
 
     // Extract userId from URL on mount
     const query = new URLSearchParams(location.search);

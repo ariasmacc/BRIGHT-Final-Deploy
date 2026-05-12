@@ -22,7 +22,7 @@ const RecordExpense = () => {
     loadDropdowns();
   }, []);
 // --- Updated API Base URL ---
-  const API_BASE_URL = 'http://localhost:3000/api'; 
+  const API_BASE_URL = '/api';
 
   // --- Updated Data Fetching ---
   const loadExpenses = async () => {
