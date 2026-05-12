@@ -193,19 +193,24 @@ db.serialize(() => {
 
 syncUploadsToVolume();
 
-// =====================================================================
-// --- [NEW] PURE RAILWAY INTEGRATION (SERVE REACT FRONTEND) ---
-// =====================================================================
-// Ito yung magbabasa sa "dist" folder na ginawa mo sa Step 1
-const clientBuildPath = path.join(__dirname, '../client/dist');
+// --- [RE-FIXED] PURE RAILWAY PATH LOGIC ---
+
+let clientBuildPath = path.join(__dirname, '../client/dist');
+
+if (!fs.existsSync(clientBuildPath)) {
+    clientBuildPath = path.join(process.cwd(), 'client', 'dist');
+}
+
+console.log("🛠️ Frontend Path checking:", clientBuildPath);
+console.log("📂 Folder exists?", fs.existsSync(clientBuildPath));
+
 app.use(express.static(clientBuildPath));
 
-// CATCH-ALL ROUTE: Ito yung mag-aayos ng "Cannot GET /" error
 app.get('*', (req, res) => {
-    res.sendFile(path.join(clientBuildPath, 'index.html'));
-});
-// =====================================================================
-
-app.listen(PORT, () => {
- console.log(`Server is running on port ${PORT}`);
+    const indexPath = path.join(clientBuildPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(404).send("Frontend files (dist) not found in server. Please check deployment.");
+    }
 });
