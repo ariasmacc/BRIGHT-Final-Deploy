@@ -193,24 +193,23 @@ db.serialize(() => {
 
 syncUploadsToVolume();
 
-// --- [RE-FIXED] PURE RAILWAY PATH LOGIC ---
+// --- [FINAL PATH LOGIC] ---
+const clientBuildPath = path.join(process.cwd(), 'client', 'dist');
 
-let clientBuildPath = path.join(__dirname, '../client/dist');
+console.log("🛠️ Checking Frontend Path:", clientBuildPath);
 
-if (!fs.existsSync(clientBuildPath)) {
-    clientBuildPath = path.join(process.cwd(), 'client', 'dist');
+if (fs.existsSync(clientBuildPath)) {
+    console.log("✅ dist folder found! Serving React...");
+    app.use(express.static(clientBuildPath));
+} else {
+    console.warn("⚠️ dist folder NOT found at:", clientBuildPath);
 }
-
-console.log("🛠️ Frontend Path checking:", clientBuildPath);
-console.log("📂 Folder exists?", fs.existsSync(clientBuildPath));
-
-app.use(express.static(clientBuildPath));
 
 app.get('*', (req, res) => {
     const indexPath = path.join(clientBuildPath, 'index.html');
     if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);
     } else {
-        res.status(404).send("Frontend files (dist) not found in server. Please check deployment.");
+        res.status(404).send(`Frontend files missing. Path checked: ${clientBuildPath}`);
     }
 });
