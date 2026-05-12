@@ -52,19 +52,28 @@ function syncUploadsToVolume() {
 
 
    // --- PART A: RESCUE DATABASE ---
+// --- PART A: RESCUE DATABASE ---
+   // I-check kung wala pang DB, O KUNG BLANGKO ang DB (less than 15KB)
+   let shouldCopyDB = false;
    if (!fs.existsSync(destDb)) {
-       if (fs.existsSync(sourceDb)) {
-           try {
-               fs.copyFileSync(sourceDb, destDb);
-               console.log(`✅ [DB RESTORE] Database copied to Volume successfully!`);
-           } catch (err) {
-               console.error(`❌ [DB ERROR] Failed to copy database:`, err.message);
-           }
-       } else {
-           console.error(`⚠️ Source database not found at ${sourceDb}. Make sure it is committed to GitHub!`);
-       }
+       shouldCopyDB = true;
    } else {
-       console.log(`ℹ️ Database already exists in Volume. Skipping copy to prevent overwrite.`);
+       const stats = fs.statSync(destDb);
+       if (stats.size < 15000) { // Kung maliit pa sa 15KB, blangko 'yan!
+           shouldCopyDB = true;
+           console.log("⚠️ Existing DB is empty. Overwriting with source DB...");
+       }
+   }
+
+   if (shouldCopyDB && fs.existsSync(sourceDb)) {
+       try {
+           fs.copyFileSync(sourceDb, destDb);
+           console.log(`✅ [DB RESTORE] Database copied to Volume successfully!`);
+       } catch (err) {
+           console.error(`❌ [DB ERROR] Failed to copy database:`, err.message);
+       }
+   } else if (fs.existsSync(destDb)) {
+       console.log(`ℹ️ Valid database already exists in Volume. Skipping overwrite.`);
    }
 
 
@@ -305,13 +314,34 @@ db.serialize(() => {
 // --- EXECUTE RESCUE OPERATION ---
 syncUploadsToVolume();
 
-const clientBuildPath = path.join(__dirname, '../client/dist');
+// =====================================================================
+// --- PURE RAILWAY INTEGRATION (SERVE REACT FRONTEND) ---
+// =====================================================================
+// Gumamit tayo ng path.resolve para 100% accurate ang folder target
+const clientBuildPath = path.resolve(__dirname, '..', 'client', 'dist');
+
+console.log("🛠️ Serving React from:", clientBuildPath);
 
 app.use(express.static(clientBuildPath));
 
 app.get('*', (req, res) => {
-    res.sendFile(path.join(clientBuildPath, 'index.html'));
+    const indexPath = path.join(clientBuildPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        // Safe Error Message imbis na mag-crash ang buong server!
+        res.status(404).send(`
+            <div style="font-family: sans-serif; padding: 40px; text-align: center;">
+                <h2 style="color: #e74c3c;">Frontend React Files Missing!</h2>
+                <p>Server looked at: <code>${indexPath}</code></p>
+                <p>Kung nakikita mo ito, ibig sabihin ay <b>buhay ang Backend mo</b> (Success!), pero hindi na-build ang Frontend.</p>
+                <p>Pumunta sa Railway > Settings > Build Command at siguraduhing nandito ito:<br>
+                <code>cd client && npm install && npm run build && cd ../server && npm install</code></p>
+            </div>
+        `);
+    }
 });
+// =====================================================================
 
 // --- Start Server ---
 app.listen(PORT, () => {
