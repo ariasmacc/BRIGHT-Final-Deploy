@@ -11,8 +11,10 @@ const OTPVerification = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Use absolute URL to avoid proxy issues if not configured
-    const API_BASE_URL = 'http://localhost:3000/api'; 
+    // 🟢 PINALITAN NA NATIN NG LIVE RAILWAY URL
+    //const API_BASE_URL = 'https://amusing-comfort-production.up.railway.app/api'; 
+
+    const API_BASE_URL = 'http://localhost:3000/api';
 
     // Extract userId from URL on mount
     const query = new URLSearchParams(location.search);
@@ -70,12 +72,11 @@ const OTPVerification = () => {
         setMessage({ text: '', type: 'info' });
 
         try {
+            // 🟢 INAYOS YUNG BACKTICKS (`) PARA HINDI MAG-SYNTAX ERROR
             const response = await fetch(`${API_BASE_URL}/users/verify-2fa`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                // --- THE CRITICAL FIX ---
                 credentials: 'include', 
-                // -------------------------
                 body: JSON.stringify({ userId, twoFACode: otpCode }),
             });
 
@@ -99,7 +100,7 @@ const OTPVerification = () => {
         } catch (error) {
             setMessage({ text: error.message, type: 'error' });
             setOtp(['', '', '', '', '', '']);
-            inputRefs.current[0].focus();
+            if (inputRefs.current[0]) inputRefs.current[0].focus();
         } finally {
             setIsSubmitting(false);
         }
@@ -121,6 +122,7 @@ const OTPVerification = () => {
         }
 
         try {
+            // 🟢 INAYOS YUNG BACKTICKS (`) DITO RIN
             const response = await fetch(`${API_BASE_URL}/users/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

@@ -17,13 +17,18 @@ const Login = () => {
   const [forgotEmail, setForgotEmail] = useState('');
   const [modalSuccess, setModalSuccess] = useState('');
 
+  // 🟢 LIVE RAILWAY URL
+ // const API_BASE_URL = 'https://amusing-comfort-production.up.railway.app/api';
+ const API_BASE_URL = 'http://localhost:3000/api';
+
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg(''); 
     
     try {
-        const response = await fetch('http://localhost:3000/api/users/login', {
+        // 🟢 IN-UPDATE ANG FETCH URL
+        const response = await fetch(`${API_BASE_URL}/users/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -40,14 +45,11 @@ const Login = () => {
 
         if (response.ok) {
             // --- MANDATORY 2FA FLOW ---
-            // We no longer check "if (data.requires2FA)". 
-            // We ALWAYS store the temp info and redirect to OTP.
-            
             sessionStorage.setItem('tempUsername', username);
             sessionStorage.setItem('tempPassword', password);
             sessionStorage.setItem('tempRole', role);
             
-            // Redirect to the dedicated OTP page for EVERY successful login
+            // 🟢 INAYOS ANG BACKTICKS DITO PARA HINDI MAG-SYNTAX ERROR
             navigate(`/auth/verify-otp?userId=${data.userId}`);
             
         } else {
@@ -69,7 +71,8 @@ const Login = () => {
     setErrorMsg('');
 
     try {
-      const response = await fetch('http://localhost:3000/api/users/forgot-password', {
+      // 🟢 IN-UPDATE ANG FETCH URL
+      const response = await fetch(`${API_BASE_URL}/users/forgot-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +83,6 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // We use the message from your backend controller
         setModalSuccess(data.message); 
       } else {
         setErrorMsg(data.error || 'Failed to request reset link.');
@@ -194,7 +196,6 @@ const Login = () => {
             <span className="fp-close" onClick={() => setIsModalOpen(false)}>&times;</span>
             <h2>Forgot Password</h2>
             
-            {/* 1. Updated onSubmit to use the new function */}
             <form onSubmit={handleForgotPassword}>
               <label>Email Address</label>
               <input 
@@ -205,11 +206,9 @@ const Login = () => {
                 placeholder="example@gmail.com"
               />
               
-              {/* 2. Success and Error Message Display */}
               {modalSuccess && <div className="alert success" style={{ color: 'green', marginBottom: '10px', fontSize: '14px' }}>{modalSuccess}</div>}
               {errorMsg && <div className="alert error" style={{ color: '#dc2626', marginBottom: '10px', fontSize: '14px' }}>{errorMsg}</div>}
               
-              {/* 3. Disabled button while loading */}
               <button type="submit" className="signup-btn-primary" disabled={isLoading}>
                 {isLoading ? 'Sending...' : 'Send Reset Link'}
               </button>
