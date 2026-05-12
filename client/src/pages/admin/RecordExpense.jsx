@@ -109,12 +109,13 @@ const RecordExpense = () => {
     });
 
     try {
-      const res = await fetch(`http://localhost:3000${API_BASE_URL}/expenses`, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData
-      });
-      if (!res.ok) throw new Error('Failed to submit');
+          // 👇 Tinanggal natin yung sobrang localhost dito 👇
+          const res = await fetch(`${API_BASE_URL}/expenses`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData
+          });
+          if (!res.ok) throw new Error('Failed to submit');
       
       alert('Expense recorded!');
       form.reset();

@@ -58,3 +58,27 @@ SECRET RAW STRING:
 ----------------------------------------------------------------
 ================================================================
 
+
+================================================================
+RECORD TYPE : BUDGET
+TIMESTAMP   : 2026-05-12T05:10:07.056Z
+RECORD ID   : BGT-2026-8230
+DB HASH     : b1ae9dd5669f7e68401ed9f00699f59a6b1f2877156b99928ee7f16dec8a3f27
+----------------------------------------------------------------
+SECRET RAW STRING:
+{"block":5,"id":"BGT-2026-8230","name":"Lechon","category":"eventsandactivities","amount":8000,"desc":"nagugutom na mga prof, need palakihin tyan","justification":"para tumaba yung mga prof","submitter":3,"priority":"Normal","timestamp":"2026-05-12T05:10:07.052Z","prevHash":"59a90ba180283a53a3ee07bc1a828223c6cc8e9ec5af682bd7e18ac0511b3ea7"}
+----------------------------------------------------------------
+================================================================
+
+
+================================================================
+RECORD TYPE : EXPENSE
+TIMESTAMP   : 2026-05-12T05:25:46.324Z
+RECORD ID   : EXP-2026-4609
+DB HASH     : b5b08d0902d2929873c6b17e9ca3a4f5302509f7dca783a6dd9f07d7621b2038
+----------------------------------------------------------------
+SECRET RAW STRING:
+{"block":6,"id":"EXP-2026-4609","name":"Team Building","budgetId":"BGT-2026-8230","category":"2","amount":"5678","date":"2026-05-15","vendor":"NANAy's Lechon","desc":"masaya siya","receipt":"09ndgd638jkda","submitter":3,"timestamp":"2026-05-12T05:25:46.311Z","prevHash":"b1ae9dd5669f7e68401ed9f00699f59a6b1f2877156b99928ee7f16dec8a3f27"}
+----------------------------------------------------------------
+================================================================
+

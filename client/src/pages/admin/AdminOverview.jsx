@@ -168,7 +168,7 @@ const AdminOverview = () => {
           <h3>Validation Status</h3>
           <p className="amount" style={{ color: '#f39c12' }}><span>{summary.pendingCount}</span></p>
           <small>Available for future expenses</small>
-          <small><span id="pending-count">0</span> pending validations</small>
+          <small><span id="pending-count"></span> pending validations</small>
         </div>
       </section>
 
